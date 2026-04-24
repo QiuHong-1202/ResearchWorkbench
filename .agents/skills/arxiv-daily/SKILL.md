@@ -43,13 +43,13 @@ arxiv-daily/
 
 以下路径都相对当前仓库根目录解析：
 
-- 配置：`.claude/skills/arxiv-daily/config.yaml`
+- 配置：`.agents/skills/arxiv-daily/config.yaml`
 - 输出根：`arxiv-daily/`（可在 config 的 `output_root` 改）
-- 抓取脚本：`.claude/skills/arxiv-daily/scripts/fetch_arxiv.py`
-- 批次脚本：`.claude/skills/arxiv-daily/scripts/prepare_batches.py`
+- 抓取脚本：`.agents/skills/arxiv-daily/scripts/fetch_arxiv.py`
+- 批次脚本：`.agents/skills/arxiv-daily/scripts/prepare_batches.py`
 - 包装脚本（macOS / Linux）：`run_fetch.sh` / `run_prepare_batches.sh`
 - 包装脚本（Windows）：`run_fetch.ps1` / `run_prepare_batches.ps1`
-- 推荐文件模板：`.claude/skills/arxiv-daily/assets/recommended-template.md`
+- 推荐文件模板：`.agents/skills/arxiv-daily/assets/recommended-template.md`
 
 所有 Python 调用都必须走仓库内的 `uv` 项目环境，不要直接调用裸 `python`。
 
@@ -77,15 +77,15 @@ arxiv-daily/
 
    **macOS / Linux：**
    ```bash
-   bash .claude/skills/arxiv-daily/scripts/run_fetch.sh \
-     --config .claude/skills/arxiv-daily/config.yaml \
+   bash .agents/skills/arxiv-daily/scripts/run_fetch.sh \
+     --config .agents/skills/arxiv-daily/config.yaml \
      --out-dir <OUTPUT_ROOT>
    ```
 
    **Windows：**
    ```powershell
-   powershell -ExecutionPolicy Bypass -File .\.claude\skills\arxiv-daily\scripts\run_fetch.ps1 `
-     --config .claude\skills\arxiv-daily\config.yaml `
+   powershell -ExecutionPolicy Bypass -File .\.agents\skills\arxiv-daily\scripts\run_fetch.ps1 `
+     --config .agents\skills\arxiv-daily\config.yaml `
      --out-dir <OUTPUT_ROOT>
    ```
 
@@ -112,16 +112,16 @@ arxiv-daily/
 
 **macOS / Linux：**
 ```bash
-bash .claude/skills/arxiv-daily/scripts/run_prepare_batches.sh \
-  --config .claude/skills/arxiv-daily/config.yaml \
+bash .agents/skills/arxiv-daily/scripts/run_prepare_batches.sh \
+  --config .agents/skills/arxiv-daily/config.yaml \
   --out-dir <OUTPUT_ROOT> \
   --date {date}
 ```
 
 **Windows：**
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\.claude\skills\arxiv-daily\scripts\run_prepare_batches.ps1 `
-  --config .claude\skills\arxiv-daily\config.yaml `
+powershell -ExecutionPolicy Bypass -File .\.agents\skills\arxiv-daily\scripts\run_prepare_batches.ps1 `
+  --config .agents\skills\arxiv-daily\config.yaml `
   --out-dir <OUTPUT_ROOT> `
   --date {date}
 ```

@@ -26,8 +26,8 @@ Purpose:
 
 Key entry points:
 
-- Skill doc: [`.claude/skills/arxiv-daily/SKILL.md`](.claude/skills/arxiv-daily/SKILL.md)
-- Config: [`.claude/skills/arxiv-daily/config.yaml`](.claude/skills/arxiv-daily/config.yaml)
+- Skill doc: [`.agents/skills/arxiv-daily/SKILL.md`](.agents/skills/arxiv-daily/SKILL.md)
+- Config: [`.agents/skills/arxiv-daily/config.yaml`](.agents/skills/arxiv-daily/config.yaml)
 - Outputs: [`arxiv-daily/`](arxiv-daily/)
 
 Main knobs:
@@ -46,7 +46,7 @@ Purpose:
 
 Key entry points:
 
-- Skill doc: [`.claude/skills/paper-reader/SKILL.md`](.claude/skills/paper-reader/SKILL.md)
+- Skill doc: [`.agents/skills/paper-reader/SKILL.md`](.agents/skills/paper-reader/SKILL.md)
 - PDFs folder: [`papers/`](papers/)
 - Notes root: [`paper-notes/`](paper-notes/)
 - Artifact root: [`paper-notes/artifacts/`](paper-notes/artifacts/)
@@ -60,7 +60,7 @@ Recommended convention:
 
 - `uv`
 - Python `>= 3.11`
-- 若想走完整 assistant workflow，需要一个能读取仓库内 `.claude/skills` 的助手环境
+- 若想走完整 assistant workflow，需要一个能读取仓库内 `.agents/skills` 的助手环境
 
 First-time setup:
 
@@ -95,7 +95,7 @@ For `paper-reader`:
 PowerShell:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\.claude\skills\paper-reader\scripts\run_extract_pdf.ps1 `
+powershell -ExecutionPolicy Bypass -File .\.agents\skills\paper-reader\scripts\run_extract_pdf.ps1 `
   --input "papers\<paper>.pdf" `
   --out-dir "paper-notes\artifacts\<note-stem>" `
   --overwrite
@@ -104,7 +104,7 @@ powershell -ExecutionPolicy Bypass -File .\.claude\skills\paper-reader\scripts\r
 macOS / Linux:
 
 ```bash
-bash .claude/skills/paper-reader/scripts/run_extract_pdf.sh \
+bash .agents/skills/paper-reader/scripts/run_extract_pdf.sh \
   --input "papers/<paper>.pdf" \
   --out-dir "paper-notes/artifacts/<note-stem>" \
   --overwrite
@@ -117,14 +117,14 @@ bash .claude/skills/paper-reader/scripts/run_extract_pdf.sh \
 PowerShell:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\.claude\skills\arxiv-daily\scripts\run_fetch.ps1 `
-  --config .\.claude\skills\arxiv-daily\config.yaml `
+powershell -ExecutionPolicy Bypass -File .\.agents\skills\arxiv-daily\scripts\run_fetch.ps1 `
+  --config .\.agents\skills\arxiv-daily\config.yaml `
   --out-dir arxiv-daily
 ```
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\.claude\skills\arxiv-daily\scripts\run_prepare_batches.ps1 `
-  --config .\.claude\skills\arxiv-daily\config.yaml `
+powershell -ExecutionPolicy Bypass -File .\.agents\skills\arxiv-daily\scripts\run_prepare_batches.ps1 `
+  --config .\.agents\skills\arxiv-daily\config.yaml `
   --out-dir arxiv-daily `
   --date {date}
 ```
@@ -132,19 +132,19 @@ powershell -ExecutionPolicy Bypass -File .\.claude\skills\arxiv-daily\scripts\ru
 macOS / Linux:
 
 ```bash
-bash .claude/skills/arxiv-daily/scripts/run_fetch.sh \
-  --config .claude/skills/arxiv-daily/config.yaml \
+bash .agents/skills/arxiv-daily/scripts/run_fetch.sh \
+  --config .agents/skills/arxiv-daily/config.yaml \
   --out-dir arxiv-daily
 ```
 
 ```bash
-bash .claude/skills/arxiv-daily/scripts/run_prepare_batches.sh \
-  --config .claude/skills/arxiv-daily/config.yaml \
+bash .agents/skills/arxiv-daily/scripts/run_prepare_batches.sh \
+  --config .agents/skills/arxiv-daily/config.yaml \
   --out-dir arxiv-daily \
   --date {date}
 ```
 
-这两步会生成当日抓取结果和评分批次。批次打分以及最终 `{date}-arxiv-recommended.md` 的写出，通常由 assistant 按 [`arxiv-daily` skill 文档](.claude/skills/arxiv-daily/SKILL.md) 完成。
+这两步会生成当日抓取结果和评分批次。批次打分以及最终 `{date}-arxiv-recommended.md` 的写出，通常由 assistant 按 [`arxiv-daily` skill 文档](.agents/skills/arxiv-daily/SKILL.md) 完成。
 
 Notes:
 
@@ -185,7 +185,7 @@ Output roles:
 
 ```text
 .
-├─ .claude/
+├─ .agents/
 │  └─ skills/
 │     ├─ arxiv-daily/
 │     └─ paper-reader/
@@ -207,8 +207,7 @@ Notes:
 
 ## Further Docs
 
-- [`arxiv-daily` skill](.claude/skills/arxiv-daily/SKILL.md)
-- [`paper-reader` skill](.claude/skills/paper-reader/SKILL.md)
-- [`arxiv-daily` config](.claude/skills/arxiv-daily/config.yaml)
+- [`arxiv-daily` skill](.agents/skills/arxiv-daily/SKILL.md)
+- [`paper-reader` skill](.agents/skills/paper-reader/SKILL.md)
+- [`arxiv-daily` config](.agents/skills/arxiv-daily/config.yaml)
 - [`papers/README.md`](papers/README.md)
-

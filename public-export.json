@@ -1,6 +1,6 @@
 {
   "include": [
-    ".claude/skills/**/*",
+    ".agents/skills/**/*",
     ".gitattributes",
     ".gitignore",
     "README.md",
@@ -18,14 +18,14 @@
     ".venv/**",
     "**/__pycache__/**",
     "**/*.pyc",
-    ".claude/settings.local.json",
+    ".agents/settings.local.json",
     "cookie/**",
     "paper-notes/**",
     "arxiv-daily/**",
-    ".claude/skills/arxiv-daily/config.yaml"
+    ".agents/skills/arxiv-daily/config.yaml"
   ],
   "audit_tracked": [
-    ".claude/settings.local.json",
+    ".agents/settings.local.json",
     "cookie/**"
   ]
 }

@@ -75,13 +75,13 @@ allowed-tools: Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
 **macOS / Linux：**
 
 ```bash
-bash .claude/skills/paper-reader/scripts/run_extract_pdf.sh --input "<PDF_PATH>" --out-dir "paper-notes/artifacts/{NOTE_STEM}"
+bash .agents/skills/paper-reader/scripts/run_extract_pdf.sh --input "<PDF_PATH>" --out-dir "paper-notes/artifacts/{NOTE_STEM}"
 ```
 
 **Windows：**
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\.claude\skills\paper-reader\scripts\run_extract_pdf.ps1 --input "<PDF_PATH>" --out-dir "paper-notes/artifacts/{NOTE_STEM}"
+powershell -ExecutionPolicy Bypass -File .\.agents\skills\paper-reader\scripts\run_extract_pdf.ps1 --input "<PDF_PATH>" --out-dir "paper-notes/artifacts/{NOTE_STEM}"
 ```
 
 脚本产物是唯一可信的抽取输入：

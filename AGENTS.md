@@ -1,4 +1,4 @@
-- Skills are located in ./claude/ folder.
+- Skills are located in ./.agents/ folder.
 - Python environment for project — use uv env
     - When debugging Python/uv issues, explicitly inspect .uv-cache or .venv with hidden/ignored files enabled; do not assume default file search will include it.
     - In this repo, if a `uv` command is blocked by sandboxing because it needs access to the global uv cache, rerun it with escalated permissions instead of stopping to ask first.

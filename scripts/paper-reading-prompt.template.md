@@ -1,7 +1,7 @@
 <!-- `{{paper_name}}` 由 scripts/generate_paper_files.py 替换为命令行传入的 note stem。 -->
 
 ## Initialize Paper Reading
-read paper in folder `./papers` using skills in .claude. If the paper artifact is exist, directly use it.
+read paper in folder `./papers` using skills in .agents. If the paper artifact is exist, directly use it.
 
 The paper name is {{paper_name}}
 
