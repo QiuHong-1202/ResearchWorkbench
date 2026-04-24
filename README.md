@@ -26,18 +26,18 @@ It keeps inputs, generated notes, and daily recommendation outputs in separate, 
 
 ### 1. `arxiv-daily`
 
-用途 / Purpose:
+Purpose:
 
 - 为你关注的 arXiv 分类生成当天推荐列表
 - Keep a dated archive of raw fetch results, dedupe metadata, scoring batches, and final recommendations
 
-关键入口 / Key entry points:
+Key entry points:
 
 - Skill doc: [`.claude/skills/arxiv-daily/SKILL.md`](.claude/skills/arxiv-daily/SKILL.md)
 - Config: [`.claude/skills/arxiv-daily/config.yaml`](.claude/skills/arxiv-daily/config.yaml)
 - Outputs: [`arxiv-daily/`](arxiv-daily/)
 
-配置项 / Main knobs:
+Main knobs:
 
 - `categories`: 要抓取的 arXiv 分类
 - `interests.narrative`: 你的研究兴趣描述
@@ -46,19 +46,19 @@ It keeps inputs, generated notes, and daily recommendation outputs in separate, 
 
 ### 2. `paper-reader`
 
-用途 / Purpose:
+Purpose:
 
 - 从 PDF 中抽取 `fulltext.md`、`pages.json`、`manifest.json`
 - Generate a structured Markdown note from the extracted artifacts
 
-关键入口 / Key entry points:
+Key entry points:
 
 - Skill doc: [`.claude/skills/paper-reader/SKILL.md`](.claude/skills/paper-reader/SKILL.md)
 - PDFs folder: [`papers/`](papers/)
 - Notes root: [`paper-notes/`](paper-notes/)
 - Artifact root: [`paper-notes/artifacts/`](paper-notes/artifacts/)
 
-建议约定 / Recommended convention:
+Recommended convention:
 
 - 将待读 PDF 放到 `papers/`
 - 文件名尽量使用 `YYYY - Title.pdf`
@@ -69,7 +69,7 @@ It keeps inputs, generated notes, and daily recommendation outputs in separate, 
 - Python `>= 3.11`
 - 若想走完整 assistant workflow，需要一个能读取仓库内 `.claude/skills` 的助手环境
 
-首次准备 / First-time setup:
+First-time setup:
 
 ```bash
 uv sync
