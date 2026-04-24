@@ -1,0 +1,29 @@
+# arxiv-daily skill 配置（模板）
+#
+# 复制本文件为同目录下的 `config.yaml` 后按需修改。不要将含个人偏好的
+# `config.yaml` 提交到公开仓库时，可只提交本模板。
+#
+# `categories`：arXiv 分类代码列表，示例 cs.CV / cs.GR / cs.HC / cs.LG。
+# `output_root`：相对仓库根目录，存放日报与推荐文件。
+# `score_threshold`：0–100，低于该分数不进入推荐列表。
+# `max_recommendations`：推荐列表硬上限，防止噪声。
+# `interests.narrative`：自由文本描述你关注什么/不关注什么，越具体打分越准。
+# `interests.keywords_boost` / `keywords_demote`：可选关键词微调，命中时用于打分 tiebreak。
+
+categories:
+  - cs.CV
+  - cs.LG
+
+output_root: arxiv-daily
+score_threshold: 70
+max_recommendations: 15
+batch_size: 55                 # 每批送给打分 SubAgent 的论文数
+
+interests:
+  narrative: |
+    请用中文或英文填写你的研究兴趣与不太关心的方向（可含列表或段落）。
+    未替换本段占位内容前，skill 会提示你先完成配置。
+  # keywords_boost 示例: ["diffusion", "3D"]；留空则不打加分
+  keywords_boost: []
+  # keywords_demote 示例: ["federated"]；留空则不做降权
+  keywords_demote: []

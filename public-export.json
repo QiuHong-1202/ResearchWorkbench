@@ -1,0 +1,31 @@
+{
+  "include": [
+    ".claude/skills/**/*",
+    ".gitattributes",
+    ".gitignore",
+    "README.md",
+    "AGENTS.md",
+    "OPEN_SOURCE.md",
+    "public-export.json",
+    "pyproject.toml",
+    "uv.lock",
+    "scripts/**/*",
+    "papers/**"
+  ],
+  "exclude": [
+    ".git/**",
+    ".uv-cache/**",
+    ".venv/**",
+    "**/__pycache__/**",
+    "**/*.pyc",
+    ".claude/settings.local.json",
+    "cookie/**",
+    "paper-notes/**",
+    "arxiv-daily/**",
+    ".claude/skills/arxiv-daily/config.yaml"
+  ],
+  "audit_tracked": [
+    ".claude/settings.local.json",
+    "cookie/**"
+  ]
+}

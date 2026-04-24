@@ -1,0 +1,2 @@
+- Put paper PDF files here. The file name should be in the format of `YYYY - Title.pdf`.
+- This folder (`papers/`) intentionally ignores PDF files in git.
