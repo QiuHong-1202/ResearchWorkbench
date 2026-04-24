@@ -68,7 +68,7 @@ First-time setup:
 uv sync
 ```
 
-所有 Python 相关脚本都应通过仓库内的 `uv` 项目环境运行，而不是直接调用裸 `python`。
+所有 Python 相关脚本都应通过仓库内的 `uv` 项目环境运行。
 
 ## Quick Start
 
@@ -88,7 +88,7 @@ For `paper-reader`:
 
 ### Manual entry points
 
-脚本入口适合做“单步处理”或排查问题，但完整 workflow 仍以各自的 `SKILL.md` 为准。
+脚本入口适合做“单步处理”或排查问题，但完整 workflow 仍以各自的 `SKILL.md` 为准。如遇到沙箱权限问题，可以先执行好脚本，让 Agent 直接读提取出的文档。
 
 #### Paper artifact extraction
 
@@ -110,7 +110,7 @@ bash .agents/skills/paper-reader/scripts/run_extract_pdf.sh \
   --overwrite
 ```
 
-这一步只负责生成抽取 artifacts；最终论文笔记通常仍由 assistant 按模板生成。
+这一步只负责生成抽取 artifacts；最终论文笔记通常仍由 Agent 按模板生成。
 
 #### arXiv fetch + batch prep
 
