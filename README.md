@@ -17,6 +17,17 @@
 
 ## Core Workflows
 
+### 生成根目录阅读 prompt
+
+在已 `uv sync` 的前提下：
+
+```bash
+uv run python scripts/generate_paper_files.py "2026 - My Paper Title"
+```
+
+之后可将 `paper-reading-prompt.md` 整段贴给助手，或配合已更新的 `extract_pdf.ps1` / `extract_pdf.sh` 做抽取。
+
+
 ### 1. `arxiv-daily`
 
 Purpose:
@@ -194,6 +205,7 @@ Output roles:
 ├─ papers/
 ├─ scripts/
 ├─ extract_pdf.ps1
+├─ extract_pdf.sh
 ├─ paper-reading-prompt.md
 ├─ pyproject.toml
 └─ uv.lock
@@ -201,8 +213,8 @@ Output roles:
 
 Notes:
 
-- [`scripts/generate_paper_files.py`](scripts/generate_paper_files.py) 用于从单个 `note-stem` 更新根目录的便利文件
-- [`extract_pdf.ps1`](extract_pdf.ps1) 是面向当前目标论文的快捷包装脚本
+- 根目录 [`paper-reading-prompt.md`](paper-reading-prompt.md)、[`extract_pdf.ps1`](extract_pdf.ps1)、[`extract_pdf.sh`](extract_pdf.sh) 的生成与更新方式见上文 **paper-reader** 小节的「生成根目录阅读 prompt」
+- [`extract_pdf.ps1`](extract_pdf.ps1) / [`extract_pdf.sh`](extract_pdf.sh) 是面向当前目标论文的快捷包装脚本（分别用于 Windows / Unix）
 - [`paper-reading-prompt.md`](paper-reading-prompt.md) 是当前聚焦论文的 prompt 草稿，不是仓库主能力本身
 
 ## Further Docs

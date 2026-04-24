@@ -232,4 +232,5 @@ __marimo__/
 
 # Project Commands
 /extract_pdf.ps1
+/extract_pdf.sh
 /paper-reading-prompt.md
