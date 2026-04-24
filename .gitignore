@@ -221,6 +221,15 @@ __marimo__/
 /papers/**/*.PDF
 # /paper-notes/artifacts/
 
+# Project - arxiv-daily artifacts
+/arxiv-daily
+
+# Project - paper-notes artifacts
+/paper-notes
+
+# Project - cookies
+/cookie
+
 # Project Commands
 /extract_pdf.ps1
 /paper-reading-prompt.md
