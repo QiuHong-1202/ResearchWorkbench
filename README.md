@@ -4,11 +4,7 @@
 1. 每日抓取并筛选 arXiv
 2. 对选中的论文做结构化精读与笔记
 
-A lightweight research workspace built around two loops:
-1. daily arXiv triage
-2. structured paper reading and note-taking
-
-本仓库将 repo-local skills、脚本入口和生成产物放在同一个目录体系里，便于持续追踪论文、复用抽取结果，并把“发现值得读的论文”和“真正读完一篇论文”接起来。
+本仓库将 repo-local skills、脚本入口和生成产物放在同一个目录体系里，便于持续追踪论文、复用抽取结果。
 
 ## Introduction
 
@@ -18,9 +14,6 @@ A lightweight research workspace built around two loops:
   从配置的 arXiv 分类抓取当天内容，跨分类去重、分批打分，最终生成每日推荐结果。
 - `paper-reader`
   从本地 PDF 或 arXiv 论文出发，提取可复用 artifacts，并生成结构化 Markdown 论文笔记。
-
-This repository is designed as a workflow hub rather than a single script.
-It keeps inputs, generated notes, and daily recommendation outputs in separate, reusable locations.
 
 ## Core Workflows
 
@@ -108,6 +101,15 @@ powershell -ExecutionPolicy Bypass -File .\.claude\skills\paper-reader\scripts\r
   --overwrite
 ```
 
+macOS / Linux:
+
+```bash
+bash .claude/skills/paper-reader/scripts/run_extract_pdf.sh \
+  --input "papers/<paper>.pdf" \
+  --out-dir "paper-notes/artifacts/<note-stem>" \
+  --overwrite
+```
+
 这一步只负责生成抽取 artifacts；最终论文笔记通常仍由 assistant 按模板生成。
 
 #### arXiv fetch + batch prep
@@ -127,11 +129,25 @@ powershell -ExecutionPolicy Bypass -File .\.claude\skills\arxiv-daily\scripts\ru
   --date {date}
 ```
 
+macOS / Linux:
+
+```bash
+bash .claude/skills/arxiv-daily/scripts/run_fetch.sh \
+  --config .claude/skills/arxiv-daily/config.yaml \
+  --out-dir arxiv-daily
+```
+
+```bash
+bash .claude/skills/arxiv-daily/scripts/run_prepare_batches.sh \
+  --config .claude/skills/arxiv-daily/config.yaml \
+  --out-dir arxiv-daily \
+  --date {date}
+```
+
 这两步会生成当日抓取结果和评分批次。批次打分以及最终 `{date}-arxiv-recommended.md` 的写出，通常由 assistant 按 [`arxiv-daily` skill 文档](.claude/skills/arxiv-daily/SKILL.md) 完成。
 
 Notes:
 
-- macOS / Linux 对应的 `.sh` 包装脚本位于同一目录
 - `arxiv-daily` 的推荐质量依赖 `config.yaml` 中的兴趣描述与阈值设置
 
 ## Outputs
