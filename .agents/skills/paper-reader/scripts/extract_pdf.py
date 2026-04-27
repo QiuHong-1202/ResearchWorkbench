@@ -9,6 +9,31 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
+def _try_import_marker() -> bool:
+    """Return True if marker-pdf can be imported."""
+    try:
+        from marker.converters.pdf import PdfConverter  # noqa: F401
+        from marker.models import create_model_dict  # noqa: F401
+        from marker.output import text_from_rendered  # noqa: F401
+
+        return True
+    except ImportError:
+        return False
+
+
+def _save_images(images: dict, out_dir: Path) -> list[str]:
+    saved: list[str] = []
+    for fname, img in images.items():
+        from io import BytesIO
+
+        dest = out_dir / fname
+        buf = BytesIO()
+        img.save(buf, format="JPEG")
+        dest.write_bytes(buf.getvalue())
+        saved.append(fname)
+    return saved
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Extract text from a PDF into reusable artifacts."
@@ -95,6 +120,39 @@ def extract_with_pymupdf4llm(pdf_path: Path) -> tuple[dict[str, str], int, dict[
     return pages, page_count, metadata
 
 
+def extract_with_marker_pdf(
+    pdf_path: Path,
+) -> tuple[dict[str, str], int, dict[str, str], dict, dict[str, bytes]]:
+    """Extract text from a PDF using marker-pdf.
+
+    Returns (pages_dict, page_count, pdf_metadata, marker_meta, images).
+    """
+    from marker.converters.pdf import PdfConverter
+    from marker.models import create_model_dict
+    from marker.output import text_from_rendered
+
+    converter = PdfConverter(artifact_dict=create_model_dict())
+    rendered = converter(str(pdf_path))
+    markdown_text, _, images = text_from_rendered(rendered)
+
+    marker_meta = rendered.metadata
+
+    page_count: int
+    if hasattr(rendered, "page_count") and rendered.page_count is not None:
+        page_count = rendered.page_count
+    else:
+        page_count = 1
+
+    pages_dict: dict[str, str] = {"1": markdown_text}
+
+    pdf_metadata: dict[str, str] = {}
+    toc = marker_meta.get("table_of_contents", [])
+    if toc:
+        pdf_metadata["title"] = toc[0].get("title", "").replace("\n", " ")
+
+    return pages_dict, page_count, pdf_metadata, marker_meta, images
+
+
 def main() -> int:
     args = parse_args()
 
@@ -120,7 +178,30 @@ def main() -> int:
 
         prepare_output_dir(out_dir, args.overwrite)
 
-        pages, page_count, metadata = extract_with_pymupdf4llm(pdf_path)
+        if _try_import_marker():
+            from importlib.metadata import version
+
+            manifest["backend"] = f"marker-pdf {version('marker-pdf')}"
+            pages, page_count, metadata, marker_meta, images = extract_with_marker_pdf(pdf_path)
+
+            marker_meta_path = out_dir / "_marker_meta.json"
+            marker_meta_path.write_text(
+                json.dumps(marker_meta, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+            saved_images = _save_images(images, out_dir)
+        else:
+            warning_msg = (
+                "marker-pdf is not installed; falling back to pymupdf4llm. "
+                "Install marker-pdf with: uv sync --extra marker"
+            )
+            print(warning_msg, file=sys.stderr)
+            manifest["warnings"].append(warning_msg)
+            manifest["backend"] = "pymupdf4llm"
+            pages, page_count, metadata = extract_with_pymupdf4llm(pdf_path)
+            marker_meta_path = None
+            saved_images = []
+
         title_guess = guess_title(metadata, pages.get("1", ""), pdf_path)
 
         # Write fulltext.md — concatenate all pages
@@ -148,6 +229,10 @@ def main() -> int:
                 "pdfinfo": metadata,
             }
         )
+        if marker_meta_path is not None:
+            manifest["marker_meta_path"] = str(marker_meta_path)
+        if saved_images:
+            manifest["extracted_images"] = saved_images
     except Exception as exc:
         manifest["status"] = "error"
         manifest["errors"].append(str(exc))

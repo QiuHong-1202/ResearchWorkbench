@@ -92,6 +92,8 @@ powershell -ExecutionPolicy Bypass -File .\.agents\skills\paper-reader\scripts\r
 
 如果 `manifest.json` 的 `status` 不是 `ok`，停止并向用户报告错误，不要生成伪完整笔记。
 
+读取 `manifest.json` 后检查 `warnings` 字段；如果存在非空警告（例如 marker-pdf 未安装、已回退到 pymupdf4llm），将警告内容告知用户。
+
 ### 3. Read extracted artifacts
 
 生成笔记时，优先读取：

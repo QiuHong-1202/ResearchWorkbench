@@ -221,13 +221,14 @@ __marimo__/
 /papers/**/*.PDF
 # /paper-notes/artifacts/
 
-# Project - arxiv-daily artifacts
+# Open source ignored directories
+# arxiv-daily artifacts
 /arxiv-daily
 
-# Project - paper-notes artifacts
+# paper-notes artifacts
 /paper-notes
 
-# Project - cookies
+# cookies
 /cookie
 
 # Project Commands

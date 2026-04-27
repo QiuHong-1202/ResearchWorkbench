@@ -55,6 +55,12 @@ Purpose:
 - 从 PDF 中抽取 `fulltext.md`、`pages.json`、`manifest.json`
 - Generate a structured Markdown note from the extracted artifacts
 
+Backend selection:
+
+- 默认使用 **pymupdf4llm** 抽取文本，轻量且无需 GPU
+- 若已通过 `uv sync --extra marker` 安装了 **marker-pdf**，抽取脚本会自动优先使用它，产出质量更高的 Markdown（含 OCR 识别、版面保留、图表提取），同时额外生成 `_marker_meta.json` 与提取的图片文件
+- 未安装 marker-pdf 时自动回退到 pymupdf4llm，并在 `manifest.json` 的 `warnings` 中记录提示
+
 Key entry points:
 
 - Skill doc: [`.agents/skills/paper-reader/SKILL.md`](.agents/skills/paper-reader/SKILL.md)
@@ -77,6 +83,12 @@ First-time setup:
 
 ```bash
 uv sync
+```
+
+若需要更高质量的 PDF 抽取（marker-pdf，含 OCR / 版面分析 / 图表提取），需额外安装 PyTorch 栈：
+
+```bash
+uv sync --extra marker
 ```
 
 所有 Python 相关脚本都应通过仓库内的 `uv` 项目环境运行。
@@ -179,7 +191,9 @@ paper-notes/
    └─ {note-stem}/
       ├─ fulltext.md
       ├─ pages.json
-      └─ manifest.json
+      ├─ manifest.json
+      ├─ _marker_meta.json   (marker-pdf only)
+      └─ *.jpg               (marker-pdf only: extracted figures/images)
 
 papers/
 └─ local PDFs (git-ignored)
@@ -189,7 +203,7 @@ Output roles:
 
 - `arxiv-daily/`: 每日发现与推荐结果
 - `paper-notes/`: 最终笔记
-- `paper-notes/artifacts/`: 供后续复用的抽取中间产物
+- `paper-notes/artifacts/`: 供后续复用的抽取中间产物；`_marker_meta.json` 与提取的图片仅在启用 marker-pdf 后端时产生
 - `papers/`: 本地 PDF 输入目录
 
 ## Repo Structure
