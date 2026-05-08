@@ -5,3 +5,4 @@
     - In this repo, if a `uv` command is blocked by sandboxing because it needs access to the global uv cache, rerun it with escalated permissions instead of stopping to ask first.
 - Don't commit or run git write operations — user handles git themselves; don't run commit/push/reset/etc.
 - Before deleting any files not managed by Git (e.g., ignored files or files outside the workspace), you must warn me and wait for my manual confirmation, unless they are test files created by AGENT.
+- Windows encoding: If the platform default is GBK (cp936) always use `open(..., encoding='utf-8')` for file I/O and `sys.stdout.reconfigure(encoding='utf-8')` if printing non-ASCII to stdout. Without these, UTF-8 content (e.g. Chinese in NDJSON/MD files) causes `UnicodeDecodeError` or garbled output.
