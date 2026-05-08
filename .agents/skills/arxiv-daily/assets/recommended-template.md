@@ -1,10 +1,10 @@
 # ArXiv Recommendations - {DATE}
-阈值: {THRESHOLD} | 命中: {HITS} 篇 / 共 {SCANNED} 篇扫描
-覆盖分类: {CATEGORIES}
+Threshold: {THRESHOLD} | Matched: {HITS} / {SCANNED} papers scanned
+Categories covered: {CATEGORIES}
 
 ## {INDEX}. [{TITLE}]({ABS_LINK}) — {SCORE}/100
-**分类:** {PRIMARY_CATEGORY}{EXTRA_CATEGORIES}
-**作者:** {AUTHORS}
-**推荐理由:** {REASON}
-**摘要:** {ABSTRACT}
+**Category:** {PRIMARY_CATEGORY}{EXTRA_CATEGORIES}
+**Authors:** {AUTHORS}
+**Recommendation:** {REASON}
+**Abstract:** {ABSTRACT}
 **PDF:** {PDF_LINK}

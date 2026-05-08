@@ -306,10 +306,10 @@ def extract_utc_date(entry: Any) -> str | None:
 def render_markdown(date_str: str, category: str, entries: list[dict[str, Any]]) -> str:
     lines: list[str] = []
     lines.append(f"# ArXiv Daily - {date_str}")
-    lines.append(f"分类: {category} | 条目数: {len(entries)}")
+    lines.append(f"Category: {category} | Entries: {len(entries)}")
     lines.append("")
     if not entries:
-        lines.append("本日无新投稿。")
+        lines.append("No new submissions today.")
         lines.append("")
         return "\n".join(lines)
     for i, e in enumerate(entries, 1):
@@ -317,13 +317,13 @@ def render_markdown(date_str: str, category: str, entries: list[dict[str, Any]])
         abs_link = e["abs_link"] or ""
         lines.append(f"## {i}. [{title}]({abs_link})")
         if e["authors"]:
-            lines.append(f"**作者:** {', '.join(e['authors'])}")
+            lines.append(f"**Authors:** {', '.join(e['authors'])}")
         if e["published"]:
-            lines.append(f"**发布:** {e['published']}")
+            lines.append(f"**Published:** {e['published']}")
         if e["pdf_link"]:
             lines.append(f"**PDF:** {e['pdf_link']}")
         if e["abstract"]:
-            lines.append(f"**摘要:** {e['abstract']}")
+            lines.append(f"**Abstract:** {e['abstract']}")
         lines.append("")
     return "\n".join(lines)
 

@@ -1,8 +1,8 @@
 # ArXiv Daily - {DATE}
-分类: {CATEGORY} | 条目数: {COUNT}
+Category: {CATEGORY} | Entries: {COUNT}
 
 ## {INDEX}. [{TITLE}]({ABS_LINK})
-**作者:** {AUTHORS}
-**发布:** {PUBLISHED}
+**Authors:** {AUTHORS}
+**Published:** {PUBLISHED}
 **PDF:** {PDF_LINK}
-**摘要:** {ABSTRACT}
+**Abstract:** {ABSTRACT}
