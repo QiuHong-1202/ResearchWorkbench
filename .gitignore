@@ -219,17 +219,21 @@ __marimo__/
 # Project — ignore PDFs under papers/ (keep README etc. tracked)
 /papers/**/*.pdf
 /papers/**/*.PDF
-# /paper-notes/artifacts/
 
 # Open source ignored directories
 # arxiv-daily artifacts
-/arxiv-daily
+# /arxiv-daily
+/arxiv-daily/artifacts/
+# /arxiv-daily/recommendations/
 
 # paper-notes artifacts
-/paper-notes
+# /paper-notes
 
 # cookies
-/cookie
+# /cookie
+
+# paper review
+/review
 
 # Project Commands
 /extract_pdf.ps1

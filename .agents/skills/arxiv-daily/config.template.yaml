@@ -4,7 +4,8 @@
 # `config.yaml` 提交到公开仓库时，可只提交本模板。
 #
 # `categories`：arXiv 分类代码列表，示例 cs.CV / cs.GR / cs.HC / cs.LG。
-# `output_root`：相对仓库根目录，存放日报与推荐文件。
+# `artifacts_root`：相对仓库根目录，存放抓取、去重与打分批次等每日中间产物。
+# `recommendations_root`：相对仓库根目录，存放每日推荐文件。
 # `score_threshold`：0–100，低于该分数不进入推荐列表。
 # `max_recommendations`：推荐列表硬上限，防止噪声。
 # `interests.narrative`：自由文本描述你关注什么/不关注什么，越具体打分越准。
@@ -14,7 +15,8 @@ categories:
   - cs.CV
   - cs.LG
 
-output_root: arxiv-daily
+artifacts_root: arxiv-daily/artifacts
+recommendations_root: arxiv-daily/recommendations
 score_threshold: 70
 max_recommendations: 15
 batch_size: 55                 # 每批送给打分 SubAgent 的论文数
