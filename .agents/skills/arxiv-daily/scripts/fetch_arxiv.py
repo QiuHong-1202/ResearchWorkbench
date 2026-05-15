@@ -16,7 +16,7 @@ from typing import Any
 
 PRIMARY_RSS = "https://rss.arxiv.org/rss/{category}"
 FALLBACK_RSS = "http://export.arxiv.org/rss/{category}"
-API_ENDPOINT = "http://export.arxiv.org/api/query"
+API_ENDPOINT = "https://export.arxiv.org/api/query"
 API_PAGE_SIZE = 500
 USER_AGENT = "snowman-arxiv-daily/0.1 (+https://github.com/snowman)"
 DEFAULT_REQUEST_TIMEOUT = 30
