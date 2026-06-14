@@ -1,143 +1,31 @@
 # ResearchWorkbench
 
-轻量研究工作台，围绕两条主工作流组织：
-1. 每日抓取并筛选 arXiv
-2. 对选中的论文做结构化精读与笔记
+轻量研究工作台，围绕 arXiv 发现、论文全文抽取、结构化笔记和全文翻译组织 repo-local skills 与脚本入口。
 
-本仓库将 repo-local skills、脚本入口和生成产物放在同一个目录体系里，便于持续追踪论文、复用抽取结果。
+本仓库只跟踪工具链、模板和目录占位文件。PDF、论文笔记、推荐结果、抽取 artifacts、review/cookie/scratch 等个人或生成内容默认不提交。
 
-## Introduction
-
-这个仓库当前包含两个核心 workflow：
-
-- `arxiv-daily`
-  从配置的 arXiv 分类抓取当天内容，跨分类去重、分批打分，最终生成每日推荐结果。
-- `paper-reader`
-  从本地 PDF 或 arXiv 论文出发，提取可复用 artifacts，并生成结构化 Markdown 论文笔记。
-
-## Core Workflows
-
-### 生成根目录阅读 prompt
-
-在已 `uv sync` 的前提下：
-
-```bash
-uv run python scripts/generate_paper_files.py "2026 - My Paper Title"
-```
-
-之后可将 `paper-reading-prompt.md` 整段贴给助手，或配合已更新的 `extract_pdf.ps1` / `extract_pdf.sh` 做抽取。
-
+## Workflows
 
 ### 1. `arxiv-daily`
 
-Purpose:
-
-- 为你关注的 arXiv 分类生成当天推荐列表
-- Keep a dated archive of raw fetch results, dedupe metadata, scoring batches, and final recommendations
+从配置的 arXiv 分类抓取论文，跨分类去重，分批打分，并在 `arxiv-daily/recommendations/` 生成每日推荐文件。
 
 Key entry points:
 
 - Skill doc: [`.agents/skills/arxiv-daily/SKILL.md`](.agents/skills/arxiv-daily/SKILL.md)
-- Config: [`.agents/skills/arxiv-daily/config.yaml`](.agents/skills/arxiv-daily/config.yaml)
-- Outputs: [`arxiv-daily/`](arxiv-daily/)
+- Config template: [`.agents/skills/arxiv-daily/config.template.yaml`](.agents/skills/arxiv-daily/config.template.yaml)
+- Artifacts root: `arxiv-daily/artifacts/`
+- Recommendations root: `arxiv-daily/recommendations/`
 
-Main knobs:
-
-- `categories`: 要抓取的 arXiv 分类
-- `interests.narrative`: 你的研究兴趣描述
-- `score_threshold`: 推荐阈值
-- `max_recommendations`: 推荐条数上限
-
-### 2. `paper-reader`
-
-Purpose:
-
-- 从 PDF 中抽取 `fulltext.md`、`pages.json`、`manifest.json`
-- Generate a structured Markdown note from the extracted artifacts
-
-Backend selection:
-
-- 默认使用 **pymupdf4llm** 抽取文本，轻量且无需 GPU
-- 若已通过 `uv sync --extra marker` 安装了 **marker-pdf**，抽取脚本会自动优先使用它，产出质量更高的 Markdown（含 OCR 识别、版面保留、图表提取），同时额外生成 `_marker_meta.json` 与提取的图片文件
-- 未安装 marker-pdf 时自动回退到 pymupdf4llm，并在 `manifest.json` 的 `warnings` 中记录提示
-
-Key entry points:
-
-- Skill doc: [`.agents/skills/paper-reader/SKILL.md`](.agents/skills/paper-reader/SKILL.md)
-- PDFs folder: [`papers/`](papers/)
-- Notes root: [`paper-notes/`](paper-notes/)
-- Artifact root: [`paper-notes/artifacts/`](paper-notes/artifacts/)
-
-Recommended convention:
-
-- 将待读 PDF 放到 `papers/`
-- 文件名尽量使用 `YYYY - Title.pdf`
-
-## Prerequisites
-
-- `uv`
-- Python `>= 3.11`
-- 若想走完整 assistant workflow，需要一个能读取仓库内 `.agents/skills` 的助手环境
-
-First-time setup:
+First-time config:
 
 ```bash
-uv sync
+cp .agents/skills/arxiv-daily/config.template.yaml .agents/skills/arxiv-daily/config.yaml
 ```
 
-若需要更高质量的 PDF 抽取（marker-pdf，含 OCR / 版面分析 / 图表提取），需额外安装 PyTorch 栈：
+Then edit `config.yaml` locally. It is ignored because it contains personal research interests.
 
-```bash
-uv sync --extra marker
-```
-
-所有 Python 相关脚本都应通过仓库内的 `uv` 项目环境运行。
-
-## Quick Start
-
-### Assistant-first
-
-如果你的助手支持仓库内 skills，推荐直接用自然语言触发主流程。
-
-For `arxiv-daily`:
-
-- `用仓库里的 arxiv-daily skill 生成今天的 arXiv 推荐`
-- `Generate today's arXiv recommendations with the repo-local arxiv-daily skill`
-
-For `paper-reader`:
-
-- `读一下 papers/<paper>.pdf，并按仓库模板生成论文笔记`
-- `Read papers/<paper>.pdf and generate a structured note with the repo-local paper-reader skill`
-
-### Manual entry points
-
-脚本入口适合做“单步处理”或排查问题，但完整 workflow 仍以各自的 `SKILL.md` 为准。如遇到沙箱权限问题，可以先执行好脚本，让 Agent 直接读提取出的文档。
-
-#### Paper artifact extraction
-
-PowerShell:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\.agents\skills\paper-reader\scripts\run_extract_pdf.ps1 `
-  --input "papers\<paper>.pdf" `
-  --out-dir "paper-notes\artifacts\<note-stem>" `
-  --overwrite
-```
-
-macOS / Linux:
-
-```bash
-bash .agents/skills/paper-reader/scripts/run_extract_pdf.sh \
-  --input "papers/<paper>.pdf" \
-  --out-dir "paper-notes/artifacts/<note-stem>" \
-  --overwrite
-```
-
-这一步只负责生成抽取 artifacts；最终论文笔记通常仍由 Agent 按模板生成。
-
-#### arXiv fetch + batch prep
-
-PowerShell:
+Manual fetch and batch prep:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\.agents\skills\arxiv-daily\scripts\run_fetch.ps1 `
@@ -152,8 +40,6 @@ powershell -ExecutionPolicy Bypass -File .\.agents\skills\arxiv-daily\scripts\ru
   --date {date}
 ```
 
-macOS / Linux:
-
 ```bash
 bash .agents/skills/arxiv-daily/scripts/run_fetch.sh \
   --config .agents/skills/arxiv-daily/config.yaml \
@@ -167,44 +53,110 @@ bash .agents/skills/arxiv-daily/scripts/run_prepare_batches.sh \
   --date {date}
 ```
 
-这两步会生成当日抓取结果和评分批次。批次打分以及最终 `{date}-arxiv-recommended.md` 的写出，通常由 assistant 按 [`arxiv-daily` skill 文档](.agents/skills/arxiv-daily/SKILL.md) 完成。
+### 2. `paper-extract`
 
-Notes:
+从本地 PDF 或 arXiv 链接生成可复用 artifacts：`fulltext.md`、`assets/pages.json`、`assets/manifest.json`、LLM 后处理 prompt，以及 marker-pdf 后端可选的图片与元数据。
 
-- `arxiv-daily` 的推荐质量依赖 `config.yaml` 中的兴趣描述与阈值设置
+Key entry points:
+
+- Skill doc: [`.agents/skills/paper-extract/SKILL.md`](.agents/skills/paper-extract/SKILL.md)
+- Extract script: [`.agents/skills/paper-extract/scripts/extract_pdf.py`](.agents/skills/paper-extract/scripts/extract_pdf.py)
+- arXiv download script: [`.agents/skills/paper-extract/scripts/download_arxiv.py`](.agents/skills/paper-extract/scripts/download_arxiv.py)
+- Artifacts root: `paper-notes/artifacts/`
+
+Manual extraction:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\.agents\skills\paper-extract\scripts\run_extract_pdf.ps1 `
+  --input "papers\<paper>.pdf" `
+  --out-dir "paper-notes\artifacts\<note-stem>" `
+  --overwrite
+```
+
+```bash
+bash .agents/skills/paper-extract/scripts/run_extract_pdf.sh \
+  --input "papers/<paper>.pdf" \
+  --out-dir "paper-notes/artifacts/<note-stem>" \
+  --overwrite
+```
+
+### 3. `paper-note`
+
+基于 `paper-extract` 产出的 artifacts 生成结构化中文论文笔记。
+
+Key entry points:
+
+- Skill doc: [`.agents/skills/paper-note/SKILL.md`](.agents/skills/paper-note/SKILL.md)
+- Note template: [`.agents/skills/paper-note/assets/paper-note-template.md`](.agents/skills/paper-note/assets/paper-note-template.md)
+- Notes root: `paper-notes/`
+
+### 4. `paper-translate`
+
+将 `paper-extract` 产出的 `fulltext.md` 翻译为简体中文，输出到同一 artifact 目录的 `fulltext.zh-CN.md`。
+
+Key entry point:
+
+- Skill doc: [`.agents/skills/paper-translate/SKILL.md`](.agents/skills/paper-translate/SKILL.md)
+
+## Prerequisites
+
+- `uv`
+- Python `>= 3.11`
+- 一个能读取仓库内 `.agents/skills` 的 assistant 环境
+
+Default install:
+
+```bash
+uv sync
+```
+
+Optional marker-pdf backend:
+
+```bash
+uv sync --extra marker
+```
+
+所有 Python 脚本都应通过仓库内的 `uv` 项目环境运行。
+
+## Helper Script
+
+生成当前论文的根目录 prompt 和快捷抽取脚本：
+
+```bash
+uv run python scripts/generate_paper_files.py "2026 - My Paper Title"
+```
+
+该命令会更新被 Git 忽略的 `paper-reading-prompt.md`、`extract_pdf.ps1` 和 `extract_pdf.sh`。
 
 ## Outputs
 
 ```text
 arxiv-daily/
-├─ {date}-arxiv-recommended.md
-└─ {date}/
-   ├─ {date}-arxiv-cs.CV.md
-   ├─ {date}-arxiv-cs.CV.json
-   ├─ {date}-manifest.json
-   ├─ {date}-dedupe-meta.json
-   └─ scoring-batches-{date}/
+├─ artifacts/
+│  └─ {date}/
+│     ├─ {date}-arxiv-cs.CV.md
+│     ├─ {date}-arxiv-cs.CV.json
+│     ├─ {date}-manifest.json
+│     ├─ {date}-dedupe-meta.json
+│     └─ scoring-batches-{date}/
+└─ recommendations/
+   └─ {date}-arxiv-recommended.md
 
 paper-notes/
 ├─ {note-stem}.md
 └─ artifacts/
    └─ {note-stem}/
       ├─ fulltext.md
-      ├─ pages.json
-      ├─ manifest.json
-      ├─ _marker_meta.json   (marker-pdf only)
-      └─ *.jpg               (marker-pdf only: extracted figures/images)
+      ├─ assets/
+      │  ├─ manifest.json
+      │  ├─ pages.json
+      │  ├─ llm-postprocess-prompt.md
+      │  └─ llm-postprocess-report.md
+      └─ figs/
 
 papers/
 └─ local PDFs (git-ignored)
 ```
-
-Output roles:
-
-- `arxiv-daily/`: 每日发现与推荐结果
-- `paper-notes/`: 最终笔记
-- `paper-notes/artifacts/`: 供后续复用的抽取中间产物；`_marker_meta.json` 与提取的图片仅在启用 marker-pdf 后端时产生
-- `papers/`: 本地 PDF 输入目录
 
 ## Repo Structure
 
@@ -213,27 +165,23 @@ Output roles:
 ├─ .agents/
 │  └─ skills/
 │     ├─ arxiv-daily/
-│     └─ paper-reader/
+│     ├─ paper-extract/
+│     ├─ paper-note/
+│     └─ paper-translate/
 ├─ arxiv-daily/
 ├─ paper-notes/
 ├─ papers/
+├─ review/
 ├─ scripts/
-├─ extract_pdf.ps1
-├─ extract_pdf.sh
-├─ paper-reading-prompt.md
 ├─ pyproject.toml
 └─ uv.lock
 ```
 
-Notes:
-
-- 根目录 [`paper-reading-prompt.md`](paper-reading-prompt.md)、[`extract_pdf.ps1`](extract_pdf.ps1)、[`extract_pdf.sh`](extract_pdf.sh) 的生成与更新方式见上文 **paper-reader** 小节的「生成根目录阅读 prompt」
-- [`extract_pdf.ps1`](extract_pdf.ps1) / [`extract_pdf.sh`](extract_pdf.sh) 是面向当前目标论文的快捷包装脚本（分别用于 Windows / Unix）
-- [`paper-reading-prompt.md`](paper-reading-prompt.md) 是当前聚焦论文的 prompt 草稿，不是仓库主能力本身
-
 ## Further Docs
 
 - [`arxiv-daily` skill](.agents/skills/arxiv-daily/SKILL.md)
-- [`paper-reader` skill](.agents/skills/paper-reader/SKILL.md)
-- [`arxiv-daily` config](.agents/skills/arxiv-daily/config.yaml)
+- [`paper-extract` skill](.agents/skills/paper-extract/SKILL.md)
+- [`paper-note` skill](.agents/skills/paper-note/SKILL.md)
+- [`paper-translate` skill](.agents/skills/paper-translate/SKILL.md)
+- [`arxiv-daily` config template](.agents/skills/arxiv-daily/config.template.yaml)
 - [`papers/README.md`](papers/README.md)

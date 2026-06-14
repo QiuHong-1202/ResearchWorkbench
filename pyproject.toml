@@ -31,3 +31,6 @@ torchaudio = [
 name = "pytorch-cu126"
 url = "https://download.pytorch.org/whl/cu126"
 explicit = true
+
+[tool.pyright]
+extraPaths = [".agents/skills/paper-extract/scripts"]

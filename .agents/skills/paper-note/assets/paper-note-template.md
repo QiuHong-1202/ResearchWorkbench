@@ -247,9 +247,9 @@ created: {Date}
 
 - PDF：`{PdfPath}`
 - 来源：`{Source}`
-- Manifest：`artifacts/{NoteStem}/manifest.json`
+- Manifest：`artifacts/{NoteStem}/assets/manifest.json`
 - Full text：`artifacts/{NoteStem}/fulltext.md`
-- Pages：`artifacts/{NoteStem}/pages.json`
+- Pages：`artifacts/{NoteStem}/assets/pages.json`
 
 ---
 

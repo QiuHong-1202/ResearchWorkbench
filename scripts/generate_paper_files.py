@@ -52,7 +52,7 @@ _INPUT_ARG_RE = re.compile(r'(--input\s+")([^"]*)(")', re.IGNORECASE)
 _OUT_DIR_ARG_RE = re.compile(r'(--out-dir\s+")([^"]*)(")', re.IGNORECASE)
 _LEADING_TEMPLATE_HTML_COMMENT = re.compile(r"^\s*<!--.*?-->\s*\n?")
 
-INVOKE_PS1_TEMPLATE = r"""powershell -ExecutionPolicy Bypass -File .\.agents\skills\paper-reader\scripts\run_extract_pdf.ps1 `
+INVOKE_PS1_TEMPLATE = r"""powershell -ExecutionPolicy Bypass -File .\.agents\skills\paper-extract\scripts\run_extract_pdf.ps1 `
   --input "{{input_pdf}}" `
   --out-dir "{{output_dir}}" `
   --overwrite
@@ -61,7 +61,7 @@ INVOKE_PS1_TEMPLATE = r"""powershell -ExecutionPolicy Bypass -File .\.agents\ski
 INVOKE_SH_TEMPLATE = r"""#!/usr/bin/env bash
 set -euo pipefail
 
-.agents/skills/paper-reader/scripts/run_extract_pdf.sh \
+.agents/skills/paper-extract/scripts/run_extract_pdf.sh \
   --input "{{input_pdf}}" \
   --out-dir "{{output_dir}}" \
   --overwrite

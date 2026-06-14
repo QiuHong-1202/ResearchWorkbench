@@ -211,5 +211,5 @@ SubAgent 调用参数：
 ## Future extensions
 
 - **作者 Comment（`Comment: 12 pages, accepted to SIGGRAPH`）**：arXiv 2023+ 的新 RSS 格式完全不暴露 Comment 字段（description 只有 `arXiv:ID Announce Type / Abstract`，作者走 `dc:creator`）。arXiv Query API 的 Atom 输出里有 `<arxiv:comment>`，若要全链路拿 Comment，可在 API 路径的 `parse_entry` 里一并抽取
-- 与 `paper-reader` 联动：推荐列表点链接直接触发深读
+- 与 `paper-extract` / `paper-note` 联动：推荐列表点链接直接触发深读
 - 订阅过滤后自动发送到其他渠道（邮件、Slack）

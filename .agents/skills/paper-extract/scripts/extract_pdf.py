@@ -8,30 +8,23 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-
-def _try_import_marker() -> bool:
-    """Return True if marker-pdf can be imported."""
-    try:
-        from marker.converters.pdf import PdfConverter  # noqa: F401
-        from marker.models import create_model_dict  # noqa: F401
-        from marker.output import text_from_rendered  # noqa: F401
-
-        return True
-    except ImportError:
-        return False
-
-
-def _save_images(images: dict, out_dir: Path) -> list[str]:
-    saved: list[str] = []
-    for fname, img in images.items():
-        from io import BytesIO
-
-        dest = out_dir / fname
-        buf = BytesIO()
-        img.save(buf, format="JPEG")
-        dest.write_bytes(buf.getvalue())
-        saved.append(fname)
-    return saved
+from markdown_cleanup import (
+    _build_fulltext_with_relocated_blocks,
+    _postprocess_extracted_markdown,
+    _relocate_markdown_blocks,
+    _split_marker_markdown_by_pages,
+    _strip_running_headers_footers,
+)
+from llm_postprocess import (
+    LLM_POSTPROCESS_REPORT_NAME,
+    write_llm_postprocess_prompt,
+)
+from pdf_backends import (
+    _save_images,
+    _try_import_marker,
+    extract_with_marker_pdf,
+    extract_with_pymupdf4llm,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -96,78 +89,25 @@ def prepare_output_dir(path: Path, overwrite: bool) -> None:
     path.mkdir(parents=True, exist_ok=True)
 
 
-def extract_with_pymupdf4llm(pdf_path: Path) -> tuple[dict[str, str], int, dict[str, str]]:
-    """Extract markdown text per page using pymupdf4llm.
-
-    Returns (pages_dict, page_count, metadata).
-    """
-    import pymupdf
-    import pymupdf4llm
-
-    doc = pymupdf.open(str(pdf_path))
-    page_count = doc.page_count
-    metadata = doc.metadata or {}
-
-    pages: dict[str, str] = {}
-    for page_num in range(page_count):
-        md_text = pymupdf4llm.to_markdown(
-            doc,
-            pages=[page_num],  # 0-based
-        )
-        pages[str(page_num + 1)] = md_text
-
-    doc.close()
-    return pages, page_count, metadata
-
-
-def extract_with_marker_pdf(
-    pdf_path: Path,
-) -> tuple[dict[str, str], int, dict[str, str], dict, dict[str, bytes]]:
-    """Extract text from a PDF using marker-pdf.
-
-    Returns (pages_dict, page_count, pdf_metadata, marker_meta, images).
-    """
-    from marker.converters.pdf import PdfConverter
-    from marker.models import create_model_dict
-    from marker.output import text_from_rendered
-
-    converter = PdfConverter(artifact_dict=create_model_dict())
-    rendered = converter(str(pdf_path))
-    markdown_text, _, images = text_from_rendered(rendered)
-
-    marker_meta = rendered.metadata
-
-    page_count: int
-    if hasattr(rendered, "page_count") and rendered.page_count is not None:
-        page_count = rendered.page_count
-    else:
-        page_count = 1
-
-    pages_dict: dict[str, str] = {"1": markdown_text}
-
-    pdf_metadata: dict[str, str] = {}
-    toc = marker_meta.get("table_of_contents", [])
-    if toc:
-        pdf_metadata["title"] = toc[0].get("title", "").replace("\n", " ")
-
-    return pages_dict, page_count, pdf_metadata, marker_meta, images
-
-
 def main() -> int:
     args = parse_args()
 
     pdf_path = Path(args.input).expanduser().resolve()
     out_dir = Path(args.out_dir).expanduser().resolve()
+    assets_dir = out_dir / "assets"
+    figs_dir = out_dir / "figs"
     fulltext_path = out_dir / "fulltext.md"
-    pages_path = out_dir / "pages.json"
-    manifest_path = out_dir / "manifest.json"
+    pages_path = assets_dir / "pages.json"
+    manifest_path = assets_dir / "manifest.json"
 
+    warnings: list[str] = []
+    errors: list[str] = []
     manifest: dict[str, object] = {
         "input_pdf": str(pdf_path),
         "output_dir": str(out_dir),
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "warnings": [],
-        "errors": [],
+        "warnings": warnings,
+        "errors": errors,
     }
 
     try:
@@ -177,41 +117,86 @@ def main() -> int:
             raise RuntimeError(f"Input file is not a PDF: {pdf_path}")
 
         prepare_output_dir(out_dir, args.overwrite)
+        assets_dir.mkdir(exist_ok=True)
+        figs_dir.mkdir(exist_ok=True)
 
         if _try_import_marker():
             from importlib.metadata import version
 
             manifest["backend"] = f"marker-pdf {version('marker-pdf')}"
-            pages, page_count, metadata, marker_meta, images = extract_with_marker_pdf(pdf_path)
+            raw_text, page_count, metadata, marker_meta, images, marker_warnings = (
+                extract_with_marker_pdf(pdf_path)
+            )
+            warnings.extend(marker_warnings)
 
-            marker_meta_path = out_dir / "_marker_meta.json"
+            marker_meta_path = assets_dir / "_marker_meta.json"
             marker_meta_path.write_text(
                 json.dumps(marker_meta, ensure_ascii=False, indent=2),
                 encoding="utf-8",
             )
-            saved_images = _save_images(images, out_dir)
+            saved_image_map = _save_images(images, figs_dir)
+
+            for original_fname, saved_fname in saved_image_map.items():
+                raw_text = raw_text.replace(
+                    f"]({original_fname})", f"](figs/{saved_fname})"
+                )
+
+            # Split into per-page chunks using page-boundary anchors
+            pages, split_warnings = _split_marker_markdown_by_pages(
+                raw_text, page_count,
+            )
+            warnings.extend(split_warnings)
+
+            # Strip running headers/footers from split pages
+            pages, n_hf = _strip_running_headers_footers(pages)
+            if n_hf:
+                warnings.append(
+                    f"Stripped {n_hf} running header/footer line(s)."
+                )
         else:
             warning_msg = (
                 "marker-pdf is not installed; falling back to pymupdf4llm. "
                 "Install marker-pdf with: uv sync --extra marker"
             )
             print(warning_msg, file=sys.stderr)
-            manifest["warnings"].append(warning_msg)
+            warnings.append(warning_msg)
             manifest["backend"] = "pymupdf4llm"
             pages, page_count, metadata = extract_with_pymupdf4llm(pdf_path)
             marker_meta_path = None
-            saved_images = []
+            saved_image_map = {}
+
+            # Strip running headers/footers, then build fulltext
+            pages, n_hf = _strip_running_headers_footers(pages)
+            if n_hf:
+                warnings.append(
+                    f"Stripped {n_hf} running header/footer line(s)."
+                )
+
+        pages, extracted_blocks = _relocate_markdown_blocks(pages)
+        pages, extracted_blocks, markdown_postprocess_report = (
+            _postprocess_extracted_markdown(pages, extracted_blocks)
+        )
+        fulltext = _build_fulltext_with_relocated_blocks(pages, extracted_blocks)
+        relocated_block_counts = {
+            name: len(items) for name, items in extracted_blocks.items() if items
+        }
 
         title_guess = guess_title(metadata, pages.get("1", ""), pdf_path)
+        llm_postprocess_prompt_path = write_llm_postprocess_prompt(
+            assets_dir=assets_dir,
+            fulltext_path=fulltext_path,
+            pages_path=pages_path,
+            manifest_path=manifest_path,
+        )
 
-        # Write fulltext.md — concatenate all pages
-        fulltext = "\n\n".join(pages[str(i)] for i in range(1, page_count + 1))
+        # Write fulltext.md
         fulltext_path.write_text(fulltext, encoding="utf-8")
 
         # Write pages.json
         pages_payload = {
             "page_count": page_count,
             "pages": pages,
+            "extracted_blocks": extracted_blocks,
         }
         pages_path.write_text(
             json.dumps(pages_payload, ensure_ascii=False, indent=2),
@@ -227,15 +212,38 @@ def main() -> int:
                 "fulltext_path": str(fulltext_path),
                 "pages_path": str(pages_path),
                 "pdfinfo": metadata,
+                "relocated_block_counts": relocated_block_counts,
+                "postprocess": {
+                    "deterministic": {
+                        "status": "ok",
+                        "rules": [
+                            "remove_marker_page_anchor_spans",
+                            "simplify_citation_page_anchor_links",
+                            "add_sequential_figure_image_alt_text",
+                            "normalize_display_math_blocks",
+                        ],
+                        "changes": markdown_postprocess_report,
+                    },
+                    "llm_agent": {
+                        "status": "prompt_ready",
+                        "prompt_path": str(llm_postprocess_prompt_path),
+                        "report_path": str(
+                            assets_dir / LLM_POSTPROCESS_REPORT_NAME
+                        ),
+                    },
+                },
             }
         )
         if marker_meta_path is not None:
             manifest["marker_meta_path"] = str(marker_meta_path)
-        if saved_images:
-            manifest["extracted_images"] = saved_images
+        if saved_image_map:
+            manifest["extracted_images"] = [
+                f"figs/{f}" for f in saved_image_map.values()
+            ]
     except Exception as exc:
         manifest["status"] = "error"
-        manifest["errors"].append(str(exc))
+        errors.append(str(exc))
+        manifest_path.parent.mkdir(parents=True, exist_ok=True)
         manifest_path.write_text(
             json.dumps(manifest, ensure_ascii=False, indent=2),
             encoding="utf-8",
