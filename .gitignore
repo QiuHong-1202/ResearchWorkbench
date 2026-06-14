@@ -223,19 +223,30 @@ __marimo__/
 # Open source ignored directories
 # arxiv-daily artifacts
 # /arxiv-daily
-/arxiv-daily/artifacts/
-# /arxiv-daily/recommendations/
+/arxiv-daily/artifacts/*
+!/arxiv-daily/artifacts/.gitkeep
+/arxiv-daily/recommendations/*
+!/arxiv-daily/recommendations/.gitkeep
 
 # paper-notes artifacts
 # /paper-notes
+/paper-notes/*
+!/paper-notes/.gitkeep
+!/paper-notes/artifacts/
+/paper-notes/artifacts/*
+!/paper-notes/artifacts/.gitkeep
 
 # cookies
 # /cookie
 
 # paper review
-/review
+/review/*
+!/review/.gitkeep
 
 # Project Commands
 /extract_pdf.ps1
 /extract_pdf.sh
 /paper-reading-prompt.md
+
+# scratch
+/scratch/

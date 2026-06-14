@@ -1,4 +1,4 @@
-# SnowmanResearch
+# ResearchWorkbench
 
 轻量研究工作台，围绕两条主工作流组织：
 1. 每日抓取并筛选 arXiv
