@@ -53,6 +53,26 @@ bash .agents/skills/arxiv-daily/scripts/run_prepare_batches.sh \
   --date {date}
 ```
 
+### Optional: `archive-arxiv-recommendations`
+
+把 `arxiv-daily/recommendations/` 中非当月的推荐文件移动到 `archive/YYYY-MM/`，保持根目录只放当月推荐。
+
+Key entry point:
+
+- Skill doc: [`.agents/skills/archive-arxiv-recommendations/SKILL.md`](.agents/skills/archive-arxiv-recommendations/SKILL.md)
+
+Dry-run first:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\.agents\skills\archive-arxiv-recommendations\scripts\run_archive.ps1 --dry-run
+```
+
+```bash
+bash .agents/skills/archive-arxiv-recommendations/scripts/run_archive.sh --dry-run
+```
+
+The archive helper does not run `git add`, `git mv`, `git commit`, or `git push`.
+
 ### 2. `paper-extract`
 
 从本地 PDF 或 arXiv 链接生成可复用 artifacts：`fulltext.md`、`assets/pages.json`、`assets/manifest.json`、LLM 后处理 prompt，以及 marker-pdf 后端可选的图片与元数据。
@@ -164,6 +184,7 @@ papers/
 .
 ├─ .agents/
 │  └─ skills/
+│     ├─ archive-arxiv-recommendations/
 │     ├─ arxiv-daily/
 │     ├─ paper-extract/
 │     ├─ paper-note/
@@ -180,6 +201,7 @@ papers/
 ## Further Docs
 
 - [`arxiv-daily` skill](.agents/skills/arxiv-daily/SKILL.md)
+- [`archive-arxiv-recommendations` skill](.agents/skills/archive-arxiv-recommendations/SKILL.md)
 - [`paper-extract` skill](.agents/skills/paper-extract/SKILL.md)
 - [`paper-note` skill](.agents/skills/paper-note/SKILL.md)
 - [`paper-translate` skill](.agents/skills/paper-translate/SKILL.md)
