@@ -135,7 +135,7 @@ powershell -ExecutionPolicy Bypass -File .\.agents\skills\paper-extract\scripts\
 
 ```
 paper-notes/artifacts/{NOTE_STEM}/
-├── fulltext.md                        # 核心：Markdown 全文
+├── fulltext.md                        # 核心：Markdown 全文（图 / 表 / 版权归集到文末区块）
 ├── assets/                            # 元数据与后处理文件
 │   ├── manifest.json
 │   ├── pages.json
@@ -150,7 +150,8 @@ paper-notes/artifacts/{NOTE_STEM}/
 
 - 首页出版 / 版权样板文本（例如 DOI、Received / accepted 时间线、IEEE / ACM 版权声明）会从正文中移到 `fulltext.md` 文末的 `## Copyright` 区块。
 - 图片语法、被省略的图片占位符，以及可识别的 `Figure` / `Fig.` 图注会从正文中移到 `fulltext.md` 文末的 `## Figures` 区块。
-- `assets/pages.json` 中的 `pages` 字段保存移除这些内容后的页文本；原始被移动内容保存在 `extracted_blocks.figures` 和 `extracted_blocks.copyright`。
+- Markdown 管道表格、HTML `<table>` 表格，以及可识别的 `Table` / `Tab.` 表格标题会从正文中移到 `fulltext.md` 文末的 `## Tables` 区块。
+- `assets/pages.json` 中的 `pages` 字段保存移除这些内容后的页文本；原始被移动内容保存在 `extracted_blocks.figures`、`extracted_blocks.tables` 和 `extracted_blocks.copyright`。
 - `assets/manifest.json` 的 `relocated_block_counts` 会记录每类被移动条目的数量。
 - marker 页锚点（例如 `<span id="page-17-25"></span>`）会被删除。
 - 空 alt 的图片语法（例如 `![](figs/_page_0_Figure_7.jpeg)`）会按出现顺序补成 `![Figure N](figs/...)`。

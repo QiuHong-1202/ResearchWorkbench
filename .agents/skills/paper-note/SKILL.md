@@ -61,7 +61,7 @@ allowed-tools: Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
 - 标题、作者、年份、可能的 venue
 - 摘要、方法、实验设置、结果
 - 所有可识别的 `Figure N`、`Table N`、编号公式 / 方程（作为可选补充材料）
-- 若需要查看图像或版权 / 出版样板信息，优先读取 `assets/pages.json.extracted_blocks` 或 `fulltext.md` 的 `## Figures` / `## Copyright` 区块；默认不要把 `## Copyright` 内容当作论文正文贡献来总结。
+- 若需要查看图像、表格或版权 / 出版样板信息，优先读取 `assets/pages.json.extracted_blocks` 或 `fulltext.md` 的 `## Figures` / `## Tables` / `## Copyright` 区块；默认不要把 `## Copyright` 内容当作论文正文贡献来总结。
 
 ### 3. Generate note
 

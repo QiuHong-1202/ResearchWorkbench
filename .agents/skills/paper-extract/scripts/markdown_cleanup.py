@@ -183,6 +183,14 @@ _FIGURE_CAPTION_RE = re.compile(
     r"^(?:figure|fig\.?)\s+[\w.-]+\s*[:.)-]",
     re.IGNORECASE,
 )
+_TABLE_CAPTION_RE = re.compile(
+    r"^(?:table|tab\.?)\s+[\w.-]+\s*[:.)-]",
+    re.IGNORECASE,
+)
+_TABLE_ROW_RE = re.compile(r"^\|.*\|$")
+_TABLE_SEPARATOR_RE = re.compile(r"^\|[\s:\-|]+\|$")
+_HTML_TABLE_OPEN_RE = re.compile(r"^<table\b", re.IGNORECASE)
+_HTML_TABLE_CLOSE_RE = re.compile(r"</table>", re.IGNORECASE)
 _DOI_RE = re.compile(r"\b10\.\d{4,9}/[-._;()/:A-Z0-9]+", re.IGNORECASE)
 _PUBLICATION_ID_RE = re.compile(
     r"\b(?:ISSN\s*)?\d{4}-[\dXx]{3}[\dXx]\b"
@@ -227,6 +235,63 @@ def _is_figure_line(line: str) -> bool:
 
     plain = _strip_markdown_wrappers(text)
     return bool(_FIGURE_CAPTION_RE.match(plain))
+
+
+def _is_table_caption_line(line: str) -> bool:
+    plain = _strip_markdown_wrappers(line)
+    return bool(_TABLE_CAPTION_RE.match(plain))
+
+
+def _match_markdown_table(
+    lines: list[str],
+    start: int,
+) -> tuple[str | None, int]:
+    """Detect a GitHub-style pipe table starting at ``lines[start]``.
+
+    Requires the start line to be a pipe row and the next line to be a
+    separator row (e.g. ``|---|---|``).  Returns ``(block_text,
+    consumed)`` where ``block_text`` joins the consecutive pipe rows, or
+    ``(None, 0)`` when no table is found.
+    """
+    if not _TABLE_ROW_RE.match(lines[start].strip()):
+        return None, 0
+    if start + 1 >= len(lines):
+        return None, 0
+    separator = lines[start + 1].strip()
+    if not (_TABLE_SEPARATOR_RE.match(separator) and "-" in separator):
+        return None, 0
+
+    block: list[str] = []
+    idx = start
+    while idx < len(lines) and _TABLE_ROW_RE.match(lines[idx].strip()):
+        block.append(lines[idx].strip())
+        idx += 1
+
+    return "\n".join(block), idx - start
+
+
+def _match_html_table(
+    lines: list[str],
+    start: int,
+) -> tuple[str | None, int]:
+    """Detect an HTML ``<table>`` block starting at ``lines[start]``.
+
+    Collects lines up to and including the closing ``</table>`` tag.
+    Returns ``(None, 0)`` when the opening tag is absent or the table is
+    not closed within the remaining lines.
+    """
+    if not _HTML_TABLE_OPEN_RE.match(lines[start].strip()):
+        return None, 0
+
+    block: list[str] = []
+    idx = start
+    while idx < len(lines):
+        block.append(lines[idx].strip())
+        if _HTML_TABLE_CLOSE_RE.search(lines[idx]):
+            return "\n".join(block), idx - start + 1
+        idx += 1
+
+    return None, 0
 
 
 def _is_front_page_boilerplate_line(line: str, page_num: int) -> bool:
@@ -421,6 +486,7 @@ def _relocate_markdown_blocks(
 ) -> tuple[dict[str, str], RelocatedBlocks]:
     blocks: RelocatedBlocks = {
         "figures": [],
+        "tables": [],
         "copyright": [],
     }
     cleaned_pages: dict[str, str] = {}
@@ -428,22 +494,43 @@ def _relocate_markdown_blocks(
     for page_key in sorted(pages.keys(), key=lambda k: int(k)):
         page_num = int(page_key)
         body_lines: list[str] = []
+        lines = pages[page_key].splitlines()
+        n = len(lines)
+        i = 0
 
-        for line in pages[page_key].splitlines():
+        while i < n:
+            line = lines[i]
             normalized = line.strip()
             if not normalized:
                 body_lines.append(line)
+                i += 1
+                continue
+
+            table_text, consumed = _match_markdown_table(lines, i)
+            if table_text is None:
+                table_text, consumed = _match_html_table(lines, i)
+            if table_text is not None:
+                blocks["tables"].append({"page": page_num, "text": table_text})
+                i += consumed
+                continue
+
+            if _is_table_caption_line(normalized):
+                blocks["tables"].append({"page": page_num, "text": normalized})
+                i += 1
                 continue
 
             if _is_figure_line(normalized):
                 blocks["figures"].append({"page": page_num, "text": normalized})
+                i += 1
                 continue
 
             if _is_front_page_boilerplate_line(normalized, page_num):
                 blocks["copyright"].append({"page": page_num, "text": normalized})
+                i += 1
                 continue
 
             body_lines.append(line)
+            i += 1
 
         cleaned_pages[page_key] = _collapse_blank_lines("\n".join(body_lines))
 
@@ -480,6 +567,10 @@ def _build_fulltext_with_relocated_blocks(
     figures = _format_relocated_block(blocks.get("figures", []))
     if figures:
         sections.append(f"## Figures\n\n{figures}")
+
+    tables = _format_relocated_block(blocks.get("tables", []))
+    if tables:
+        sections.append(f"## Tables\n\n{tables}")
 
     copyright_text = _format_relocated_block(blocks.get("copyright", []))
     if copyright_text:

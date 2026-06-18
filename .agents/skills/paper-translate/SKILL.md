@@ -37,7 +37,7 @@ allowed-tools: Bash, Read, Write, Edit, Glob, Grep
 
 - 保持 Markdown 结构不变：heading 层级、列表、代码块、引用块、分隔线
 - 保留图片引用语法原样不翻译：`![Figure N](...)` 保持英文
-- 保留 `## Figures` 和 `## Copyright` 区块结构，区块内图注文字翻译、版权文本保留原文
+- 保留 `## Figures`、`## Tables` 和 `## Copyright` 区块结构，区块内图注 / 表格文字翻译、版权文本保留原文
 - 保留表格结构，翻译表格内的文字内容
 
 ### Terminology handling
