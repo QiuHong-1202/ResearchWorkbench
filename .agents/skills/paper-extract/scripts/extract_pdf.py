@@ -5,6 +5,7 @@ import argparse
 import json
 import shutil
 import sys
+import traceback
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -243,6 +244,8 @@ def main() -> int:
     except Exception as exc:
         manifest["status"] = "error"
         errors.append(str(exc))
+        manifest["error_type"] = type(exc).__name__
+        manifest["traceback"] = traceback.format_exc()
         manifest_path.parent.mkdir(parents=True, exist_ok=True)
         manifest_path.write_text(
             json.dumps(manifest, ensure_ascii=False, indent=2),
