@@ -6,6 +6,23 @@
 
 ## Workflows
 
+### Typical full paper workflow
+
+如果助手环境同时支持 Zotero 和本仓库的 repo-local skills，可以用下面的提示串联完整处理流程：
+
+```text
+@zotero 提取 Zotero 文库中的文章：
+${paper_name}
+的论文和补充材料（如有）全文
+
+按顺序执行以下步骤，如果文件已经存在、某个步骤失败、找不到 PDF、需要进一步批准，请停止流程让我 Debug：
+- 使用 $paper-extract Skill，使用这个 Skill 的时候，批准使用 SubAgent 进行 LLM Review
+- 使用 $formula-fix Skill 修复公式
+- 使用 $markdown-fix Skill 修复 OCR 错误
+- 使用 $paper-translate Skill 生成中文全文翻译
+- 使用 $paper-note Skill 生成笔记
+```
+
 ### 1. `arxiv-daily`
 
 从配置的 arXiv 分类抓取论文，跨分类去重，分批打分，并在 `arxiv-daily/recommendations/` 生成每日推荐文件。
@@ -100,7 +117,19 @@ bash .agents/skills/paper-extract/scripts/run_extract_pdf.sh \
   --overwrite
 ```
 
-### 3. `paper-note`
+### 3. `formula-fix` and `markdown-fix`
+
+对 `paper-extract` 产出的 Markdown 全文做人工审阅式清理：
+
+- `formula-fix`：把 OCR / PDF 抽取中未标准化的公式片段转换为 LaTeX。
+- `markdown-fix`：修复标题层级、散落 OCR 字符、乱码、破碎列表和断词等结构噪声。
+
+Key entry points:
+
+- Skill doc: [`.agents/skills/formula-fix/SKILL.md`](.agents/skills/formula-fix/SKILL.md)
+- Skill doc: [`.agents/skills/markdown-fix/SKILL.md`](.agents/skills/markdown-fix/SKILL.md)
+
+### 4. `paper-note`
 
 基于 `paper-extract` 产出的 artifacts 生成结构化中文论文笔记。
 
@@ -110,7 +139,7 @@ Key entry points:
 - Note template: [`.agents/skills/paper-note/assets/paper-note-template.md`](.agents/skills/paper-note/assets/paper-note-template.md)
 - Notes root: `paper-notes/`
 
-### 4. `paper-translate`
+### 5. `paper-translate`
 
 将 `paper-extract` 产出的 `fulltext.md` 翻译为简体中文，输出到同一 artifact 目录的 `fulltext.zh-CN.md`。
 
@@ -186,6 +215,8 @@ papers/
 │  └─ skills/
 │     ├─ archive-arxiv-recommendations/
 │     ├─ arxiv-daily/
+│     ├─ formula-fix/
+│     ├─ markdown-fix/
 │     ├─ paper-extract/
 │     ├─ paper-note/
 │     └─ paper-translate/
@@ -202,6 +233,8 @@ papers/
 
 - [`arxiv-daily` skill](.agents/skills/arxiv-daily/SKILL.md)
 - [`archive-arxiv-recommendations` skill](.agents/skills/archive-arxiv-recommendations/SKILL.md)
+- [`formula-fix` skill](.agents/skills/formula-fix/SKILL.md)
+- [`markdown-fix` skill](.agents/skills/markdown-fix/SKILL.md)
 - [`paper-extract` skill](.agents/skills/paper-extract/SKILL.md)
 - [`paper-note` skill](.agents/skills/paper-note/SKILL.md)
 - [`paper-translate` skill](.agents/skills/paper-translate/SKILL.md)
