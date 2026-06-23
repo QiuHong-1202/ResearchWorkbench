@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import http.client
 import json
 import re
 import sys
@@ -15,9 +16,10 @@ from typing import NamedTuple
 
 USER_AGENT = "research-workbench-paper-extract/0.1"
 ARXIV_API = "https://export.arxiv.org/api/query"
-REQUEST_TIMEOUT = 30
-MAX_RETRIES = 3
+REQUEST_TIMEOUT = 60
+MAX_RETRIES = 5
 RETRY_BACKOFF = 2.0
+DOWNLOAD_CHUNK = 1 << 16  # 64 KiB
 
 ARXIV_ID_RE = re.compile(
     r"(?:arxiv\.org/(?:abs|pdf)/|arxiv:)(\d{4}\.\d{4,5}(?:v\d+)?)",
@@ -71,13 +73,100 @@ def _http_get(url: str, *, accept: str = "*/*") -> bytes:
         try:
             with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT) as resp:
                 return resp.read()
-        except (urllib.error.URLError, OSError) as e:
+        except (urllib.error.URLError, OSError, http.client.HTTPException) as e:
             if attempt == MAX_RETRIES - 1:
                 raise
             wait = RETRY_BACKOFF * (attempt + 1)
             print(f"Retry {attempt + 1}/{MAX_RETRIES} after {wait}s: {e}", file=sys.stderr)
             time.sleep(wait)
     raise RuntimeError("unreachable")
+
+
+def _content_range_total(value: str | None) -> int | None:
+    """Parse the total size from a Content-Range header (``bytes a-b/total``)."""
+    m = re.search(r"/(\d+)\s*$", value or "")
+    return int(m.group(1)) if m else None
+
+
+def download_pdf(url: str, dest_path: Path) -> int:
+    """Stream a PDF to ``dest_path`` with resumable, retrying downloads.
+
+    Data is streamed to a ``.part`` file first. If the connection drops during a
+    large arXiv PDF download, the next attempt resumes from the current offset
+    using an HTTP Range request before the final PDF is validated and moved into
+    place.
+    """
+    tmp_path = dest_path.with_name(dest_path.name + ".part")
+    expected_total: int | None = None
+    last_err: Exception | None = None
+
+    for attempt in range(MAX_RETRIES):
+        existing = tmp_path.stat().st_size if tmp_path.exists() else 0
+        headers = {"User-Agent": USER_AGENT, "Accept": "application/pdf"}
+        if existing:
+            headers["Range"] = f"bytes={existing}-"
+        req = urllib.request.Request(url, headers=headers)
+
+        try:
+            with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT) as resp:
+                status = getattr(resp, "status", None) or resp.getcode()
+                if existing and status == 200:
+                    existing = 0
+                if status == 206:
+                    total = _content_range_total(resp.headers.get("Content-Range"))
+                    if total:
+                        expected_total = total
+                elif status == 200:
+                    content_length = resp.headers.get("Content-Length")
+                    if content_length and content_length.isdigit():
+                        expected_total = int(content_length)
+
+                mode = "ab" if existing else "wb"
+                with open(tmp_path, mode) as f:
+                    while True:
+                        chunk = resp.read(DOWNLOAD_CHUNK)
+                        if not chunk:
+                            break
+                        f.write(chunk)
+
+            got = tmp_path.stat().st_size
+            if expected_total and got < expected_total:
+                raise http.client.IncompleteRead(b"", expected_total - got)
+
+            with open(tmp_path, "rb") as f:
+                magic = f.read(5)
+            if not magic.startswith(b"%PDF"):
+                tmp_path.unlink(missing_ok=True)
+                raise RuntimeError(
+                    "Downloaded content is not a valid PDF (bad magic bytes); "
+                    "the paper may not be available yet."
+                )
+            if got < 1000:
+                tmp_path.unlink(missing_ok=True)
+                raise RuntimeError(f"Downloaded data too small ({got} bytes).")
+
+            tmp_path.replace(dest_path)
+            return got
+        except urllib.error.HTTPError as e:
+            last_err = e
+            if e.code == 416:
+                tmp_path.unlink(missing_ok=True)
+                expected_total = None
+        except (urllib.error.URLError, OSError, http.client.HTTPException) as e:
+            last_err = e
+
+        if attempt == MAX_RETRIES - 1:
+            break
+        wait = RETRY_BACKOFF * (attempt + 1)
+        have = tmp_path.stat().st_size if tmp_path.exists() else 0
+        print(
+            f"Download retry {attempt + 1}/{MAX_RETRIES} after {wait}s "
+            f"(have {have} bytes): {last_err}",
+            file=sys.stderr,
+        )
+        time.sleep(wait)
+
+    raise RuntimeError(f"Failed to download after {MAX_RETRIES} attempts: {last_err}")
 
 
 def fetch_metadata(arxiv_id: str) -> ArxivMeta:
@@ -185,17 +274,12 @@ def main() -> int:
 
     print(f"Downloading PDF from {meta.pdf_url} ...", file=sys.stderr)
     try:
-        pdf_data = _http_get(meta.pdf_url)
+        size = download_pdf(meta.pdf_url, pdf_path)
     except Exception as e:
         print(f"Failed to download PDF: {e}", file=sys.stderr)
         return 1
 
-    if len(pdf_data) < 1000:
-        print(f"Downloaded data too small ({len(pdf_data)} bytes), likely not a valid PDF.", file=sys.stderr)
-        return 1
-
-    pdf_path.write_bytes(pdf_data)
-    print(f"Saved: {pdf_path} ({len(pdf_data)} bytes)", file=sys.stderr)
+    print(f"Saved: {pdf_path} ({size} bytes)", file=sys.stderr)
 
     result = {
         "status": "downloaded",
