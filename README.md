@@ -1,8 +1,8 @@
 # ResearchWorkbench
 
-轻量研究工作台，围绕 arXiv 发现、论文全文抽取、结构化笔记和全文翻译组织 repo-local skills 与脚本入口。
+轻量研究工作台，围绕 arXiv 发现、论文全文抽取、结构化笔记、全文翻译和本地论文库索引组织 repo-local skills 与脚本入口。
 
-本仓库只跟踪工具链、模板和目录占位文件。PDF、论文笔记、推荐结果、抽取 artifacts、review/cookie/scratch 等个人或生成内容默认不提交。
+本仓库只跟踪工具链、模板和目录占位文件。PDF、推荐结果、抽取 artifacts、review/cookie/scratch 等个人或生成内容默认不提交；论文记录中建议只提交适合公开的 `paper.json` 与 `note.md`。
 
 ## Workflows
 
@@ -21,6 +21,7 @@ ${paper_name}
 - 使用 $markdown-fix Skill 修复 OCR 错误
 - 使用 $paper-translate Skill 生成中文全文翻译
 - 使用 $paper-note Skill 生成笔记
+- 运行 `uv run --project . python scripts/build_paper_index.py` 更新本地论文库索引
 ```
 
 ### 1. `arxiv-daily`
@@ -92,28 +93,28 @@ The archive helper does not run `git add`, `git mv`, `git commit`, or `git push`
 
 ### 2. `paper-extract`
 
-从本地 PDF 或 arXiv 链接生成可复用 artifacts：`fulltext.md`、`assets/pages.json`、`assets/manifest.json`、LLM 后处理 prompt，以及 marker-pdf 后端可选的图片与元数据。
+从本地 PDF 或 arXiv 链接生成可复用论文记录：`paper.json`、`fulltext.md`、`assets/pages.json`、`assets/manifest.json`、LLM 后处理 prompt，以及 marker-pdf 后端可选的图片与元数据。
 
 Key entry points:
 
 - Skill doc: [`.agents/skills/paper-extract/SKILL.md`](.agents/skills/paper-extract/SKILL.md)
 - Extract script: [`.agents/skills/paper-extract/scripts/extract_pdf.py`](.agents/skills/paper-extract/scripts/extract_pdf.py)
 - arXiv download script: [`.agents/skills/paper-extract/scripts/download_arxiv.py`](.agents/skills/paper-extract/scripts/download_arxiv.py)
-- Artifacts root: `paper-notes/artifacts/`
+- Paper record root: `library/papers/`
 
 Manual extraction:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\.agents\skills\paper-extract\scripts\run_extract_pdf.ps1 `
   --input "papers\<paper>.pdf" `
-  --out-dir "paper-notes\artifacts\<note-stem>" `
+  --out-dir "library\papers\<paper-stem>" `
   --overwrite
 ```
 
 ```bash
 bash .agents/skills/paper-extract/scripts/run_extract_pdf.sh \
   --input "papers/<paper>.pdf" \
-  --out-dir "paper-notes/artifacts/<note-stem>" \
+  --out-dir "library/papers/<paper-stem>" \
   --overwrite
 ```
 
@@ -131,21 +132,31 @@ Key entry points:
 
 ### 4. `paper-note`
 
-基于 `paper-extract` 产出的 artifacts 生成结构化中文论文笔记。
+基于 `paper-extract` 产出的论文记录目录生成结构化中文论文笔记。
 
 Key entry points:
 
 - Skill doc: [`.agents/skills/paper-note/SKILL.md`](.agents/skills/paper-note/SKILL.md)
 - Note template: [`.agents/skills/paper-note/assets/paper-note-template.md`](.agents/skills/paper-note/assets/paper-note-template.md)
-- Notes root: `paper-notes/`
+- Output note: `library/papers/{paper-stem}/note.md`
 
 ### 5. `paper-translate`
 
-将 `paper-extract` 产出的 `fulltext.md` 翻译为简体中文，输出到同一 artifact 目录的 `fulltext.zh-CN.md`。
+将 `paper-extract` 产出的 `fulltext.md` 翻译为简体中文，输出到同一记录目录的 `fulltext.zh-CN.md`。
 
 Key entry point:
 
 - Skill doc: [`.agents/skills/paper-translate/SKILL.md`](.agents/skills/paper-translate/SKILL.md)
+
+### 6. Paper library index
+
+从 `library/papers/*/paper.json` 和 `note.md` 生成自包含静态索引页面：
+
+```bash
+uv run --project . python scripts/build_paper_index.py
+```
+
+然后直接用浏览器打开 `library/index.html`；该页面不需要本地服务器。
 
 ## Prerequisites
 
@@ -172,7 +183,7 @@ uv sync --extra marker
 生成当前论文的根目录 prompt 和快捷抽取脚本：
 
 ```bash
-uv run python scripts/generate_paper_files.py "2026 - My Paper Title"
+uv run --project . python scripts/generate_paper_files.py "2026 - My Paper Title"
 ```
 
 该命令会更新被 Git 忽略的 `paper-reading-prompt.md`、`extract_pdf.ps1` 和 `extract_pdf.sh`。
@@ -191,17 +202,21 @@ arxiv-daily/
 └─ recommendations/
    └─ {date}-arxiv-recommended.md
 
-paper-notes/
-├─ {note-stem}.md
-└─ artifacts/
-   └─ {note-stem}/
+library/
+├─ index.html
+└─ papers/
+   └─ {paper-stem}/
+      ├─ paper.json
+      ├─ note.md
       ├─ fulltext.md
+      ├─ fulltext.zh-CN.md
       ├─ assets/
       │  ├─ manifest.json
       │  ├─ pages.json
       │  ├─ llm-postprocess-prompt.md
       │  └─ llm-postprocess-report.md
-      └─ figs/
+      ├─ figs/
+      └─ supplements/
 
 papers/
 └─ local PDFs (git-ignored)
@@ -221,6 +236,7 @@ papers/
 │     ├─ paper-note/
 │     └─ paper-translate/
 ├─ arxiv-daily/
+├─ library/
 ├─ paper-notes/
 ├─ papers/
 ├─ review/

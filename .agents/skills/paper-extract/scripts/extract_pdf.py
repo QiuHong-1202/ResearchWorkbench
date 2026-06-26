@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
 import sys
 import traceback
@@ -75,19 +76,87 @@ def guess_title(metadata: dict[str, str], first_page_text: str, pdf_path: Path) 
 
 
 def prepare_output_dir(path: Path, overwrite: bool) -> None:
+    generated_names = {"fulltext.md", "assets", "figs"}
     if path.exists():
-        if any(path.iterdir()) and not overwrite:
+        existing_generated = [path / name for name in generated_names if (path / name).exists()]
+        if existing_generated and not overwrite:
+            names = ", ".join(p.name for p in existing_generated)
             raise RuntimeError(
-                f"Output directory already exists and is not empty: {path}. "
-                "Use --overwrite to reuse it."
+                f"Output directory already contains extracted artifacts ({names}): {path}. "
+                "Use --overwrite to refresh generated artifacts."
             )
         if overwrite:
-            for child in path.iterdir():
+            for child in existing_generated:
                 if child.is_dir():
                     shutil.rmtree(child)
                 else:
                     child.unlink()
     path.mkdir(parents=True, exist_ok=True)
+
+
+def repo_relative(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(Path.cwd().resolve()).as_posix()
+    except ValueError:
+        return str(path)
+
+
+def year_from_stem(stem: str) -> int | None:
+    match = re.match(r"^(\d{4})\s+-\s+", stem)
+    return int(match.group(1)) if match else None
+
+
+def authors_from_metadata(metadata: dict[str, str]) -> list[str]:
+    value = metadata.get("author") or metadata.get("authors") or ""
+    if not value:
+        return []
+    parts = re.split(r"\s*[,;]\s*", value)
+    return [part for part in (p.strip() for p in parts) if part]
+
+
+def write_paper_record(
+    *,
+    out_dir: Path,
+    pdf_path: Path,
+    title: str,
+    metadata: dict[str, str],
+    manifest_path: Path,
+    pages_path: Path,
+    fulltext_path: Path,
+) -> None:
+    record_path = out_dir / "paper.json"
+    existing: dict[str, object] = {}
+    if record_path.exists():
+        try:
+            loaded = json.loads(record_path.read_text(encoding="utf-8"))
+            if isinstance(loaded, dict):
+                existing = loaded
+        except json.JSONDecodeError:
+            existing = {}
+
+    paper_stem = out_dir.name
+    record: dict[str, object] = {
+        "schema_version": 1,
+        "paper_stem": paper_stem,
+        "title": existing.get("title") or title,
+        "year": existing.get("year") or year_from_stem(paper_stem),
+        "authors": existing.get("authors") or authors_from_metadata(metadata),
+        "venue": existing.get("venue") or "",
+        "tags": existing.get("tags") or [],
+        "status": existing.get("status") or "extracted",
+        "source": existing.get("source") or repo_relative(pdf_path),
+        "pdf_path": existing.get("pdf_path") or repo_relative(pdf_path),
+        "note_path": repo_relative(out_dir / "note.md"),
+        "fulltext_path": repo_relative(fulltext_path),
+        "translation_path": repo_relative(out_dir / "fulltext.zh-CN.md"),
+        "manifest_path": repo_relative(manifest_path),
+        "pages_path": repo_relative(pages_path),
+        "supplements": existing.get("supplements") or [],
+    }
+    record_path.write_text(
+        json.dumps(record, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
 
 
 def main() -> int:
@@ -241,6 +310,15 @@ def main() -> int:
             manifest["extracted_images"] = [
                 f"figs/{f}" for f in saved_image_map.values()
             ]
+        write_paper_record(
+            out_dir=out_dir,
+            pdf_path=pdf_path,
+            title=title_guess,
+            metadata=metadata,
+            manifest_path=manifest_path,
+            pages_path=pages_path,
+            fulltext_path=fulltext_path,
+        )
     except Exception as exc:
         manifest["status"] = "error"
         errors.append(str(exc))

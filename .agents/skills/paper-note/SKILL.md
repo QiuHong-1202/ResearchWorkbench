@@ -15,27 +15,27 @@ allowed-tools: Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
 
 # Paper Note
 
-基于 `paper-extract` 产出的工件（`fulltext.md`、`assets/pages.json`、`assets/manifest.json`），按模板生成结构化中文论文笔记。
+基于 `paper-extract` 产出的论文记录目录（`paper.json`、`fulltext.md`、`assets/pages.json`、`assets/manifest.json`），按模板生成结构化中文论文笔记。
 
 ## Fixed paths
 
 以下路径相对当前仓库根目录解析：
 
-- `NOTES_ROOT = paper-notes`
-- `ARTIFACTS_ROOT = paper-notes/artifacts`
-- 笔记模板：`assets/paper-note-template.md`
+- `RECORDS_ROOT = library/papers`
+- 笔记模板：`assets/paper-note-template.md`（相对本 skill 目录）
 
 ## Accepted inputs
 
-用户提供工件目录路径，例如 `paper-notes/artifacts/{NOTE_STEM}/`。
+用户提供论文记录目录路径，例如 `library/papers/{PAPER_STEM}/`。
 
 该目录必须包含：
 
+- `paper.json`
 - `assets/manifest.json`（`status` 为 `ok`）
 - `fulltext.md`
 - `assets/pages.json`
 
-如果用户没有指定具体工件目录，尝试从上下文或最近的对话中推断；如果无法确定，询问用户。
+如果用户没有指定具体记录目录，尝试从上下文或最近的对话中推断；如果无法确定，询问用户。
 
 ## Workflow
 
@@ -45,16 +45,17 @@ allowed-tools: Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
 
 - 若为 `done` 或 `skipped_no_change`：继续生成笔记。
 - 若为 `prompt_ready`：警告用户 LLM 后处理 review 尚未执行，建议先运行 `paper-extract` skill 完成格式化。
-  - 如果用户明确要求跳过 review，可继续，但必须在最终笔记中标记"LLM fulltext review 未执行"为缺失项。
-- 若 `assets/manifest.json` 的 `status` 不是 `ok`：停止并报告抽取错误。
+  - 如果用户明确要求跳过 review，可继续，但必须在最终笔记中标记“LLM fulltext review 未执行”为缺失项。
+- 若 `assets/manifest.json.status` 不是 `ok`：停止并报告抽取错误。
 
 ### 2. Read extracted artifacts
 
 生成笔记时，优先读取：
 
-1. `assets/manifest.json`
-2. `assets/pages.json`
-3. `fulltext.md`
+1. `paper.json`
+2. `assets/manifest.json`
+3. `assets/pages.json`
+4. `fulltext.md`
 
 从这些文件中提取：
 
@@ -65,9 +66,28 @@ allowed-tools: Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
 
 ### 3. Generate note
 
-必须严格基于 `assets/paper-note-template.md` 生成 Markdown，并直接写入 `paper-notes/{NOTE_STEM}.md`。
+必须严格基于 `assets/paper-note-template.md` 生成 Markdown，并直接写入记录目录内：
 
-`NOTE_STEM` 取自工件目录名（即 `paper-notes/artifacts/{NOTE_STEM}/` 中的目录名）。
+```text
+library/papers/{PAPER_STEM}/note.md
+```
+
+生成后更新同目录 `paper.json`：
+
+- `title`
+- `method_name`
+- `year`
+- `authors`
+- `venue`
+- `tags`
+- `status`
+- `source`
+- `arxiv_html`
+- `created`
+- `summary`（取 `## 一句话总结` 的一句话）
+- `note_path`
+
+不要移动或删除 `fulltext.md`、`fulltext.zh-CN.md`、`assets/`、`figs/`。
 
 ## Note-writing rules
 
@@ -90,13 +110,13 @@ allowed-tools: Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
 其中：
 
 - `method_name`：优先写论文方法名；如果论文没有明确方法名，就写一个短标题
-- `source`：本地 PDF 路径或 arXiv URL
+- `source`：本地 PDF 路径、arXiv URL 或 `paper.json.source`
 - `status`：`complete` 或 `draft`
 - `arxiv_html`：如有 arXiv 页面可填写，否则可留空字符串
 
 ### Coverage rules
 
-这是完整模板，不是极简摘要；用中文写作，并尽量采用"总结 + 分章节阅读 + 批判性评价"的笔记组织方式。
+这是完整模板，不是极简摘要；用中文写作，并尽量采用“总结 + 分章节阅读 + 批判性评价”的笔记组织方式。
 
 默认必须覆盖：
 
@@ -133,14 +153,15 @@ allowed-tools: Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch
 - 若用户显式要求公式 / 图表分析，这部分也已按请求完成
 - `assets/manifest.json.postprocess.llm_agent.status` 为 `done` 或 `skipped_no_change`；或用户明确要求跳过 review
 
-否则写 `status: draft`，并且仅在确有缺失项时于文末追加 `## 缺失覆盖` 章节，列出未满足的显式请求或核心缺口。若用户明确要求跳过 LLM review 后继续，将"LLM fulltext review 未执行"计为一个缺失项。
+否则写 `status: draft`，并且仅在确有缺失项时于文末追加 `## 缺失覆盖` 章节，列出未满足的显式请求或核心缺口。若用户明确要求跳过 LLM review 后继续，将“LLM fulltext review 未执行”计为一个缺失项。
 
 ## Final response
 
 完成后，回复用户时必须给出：
 
 - 笔记文件路径
-- 工件目录路径
+- 记录目录路径
+- `paper.json` 路径
 - `status`
 - `assets/manifest.json.postprocess.llm_agent.status`
 - 缺失项数量（如果有）

@@ -247,9 +247,11 @@ created: {Date}
 
 - PDF：`{PdfPath}`
 - 来源：`{Source}`
-- Manifest：`artifacts/{NoteStem}/assets/manifest.json`
-- Full text：`artifacts/{NoteStem}/fulltext.md`
-- Pages：`artifacts/{NoteStem}/assets/pages.json`
+- Paper record：`paper.json`
+- Manifest：`assets/manifest.json`
+- Full text：`fulltext.md`
+- Translation：`fulltext.zh-CN.md`
+- Pages：`assets/pages.json`
 
 ---
 

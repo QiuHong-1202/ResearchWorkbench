@@ -8,7 +8,7 @@ description: |
   "生成中文全文", "translate fulltext", "论文翻译".
 
   This skill translates the extracted fulltext.md into simplified Chinese,
-  producing fulltext.zh-CN.md in the same artifact directory. It does NOT
+  producing fulltext.zh-CN.md in the same paper record directory. It does NOT
   extract PDFs, run postprocess, or generate notes.
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep
 ---
@@ -19,13 +19,22 @@ allowed-tools: Bash, Read, Write, Edit, Glob, Grep
 
 ## Accepted inputs
 
-用户提供工件目录路径，例如 `paper-notes/artifacts/{NOTE_STEM}/`。
+用户提供论文记录目录路径，例如 `library/papers/{PAPER_STEM}/`。
 
 该目录必须包含：
 
+- `paper.json`
 - `fulltext.md`（建议已经过 `paper-extract` 的 LLM 后处理格式化，但非必需）
 
-如果用户没有指定具体工件目录，尝试从上下文或最近的对话中推断；如果无法确定，询问用户。
+如果用户提供的是补充材料目录，例如：
+
+```text
+library/papers/{PAPER_STEM}/supplements/{SUPPLEMENT_LABEL}/
+```
+
+则读取该目录下的 `fulltext.md`，并输出同目录 `fulltext.zh-CN.md`。
+
+如果用户没有指定具体目录，尝试从上下文或最近的对话中推断；如果无法确定，询问用户。
 
 ## Translation rules
 
@@ -76,10 +85,15 @@ allowed-tools: Bash, Read, Write, Edit, Glob, Grep
 
 按上述规则翻译全文，写入同目录下的 `fulltext.zh-CN.md`。
 
+如果当前目录是顶层论文记录目录，更新 `paper.json.translation_path`。如果当前目录是 `supplements/{SUPPLEMENT_LABEL}/`，更新父记录 `paper.json.supplements` 中对应条目的 `translation_path`。
+
+不要移动或删除 `note.md`、`paper.json`、`assets/`、`figs/` 或源 PDF。
+
 ## Final response
 
 完成后，回复用户时必须给出：
 
 - 翻译文件路径
 - 原文字符数与译文字符数
-- 工件目录路径
+- 记录目录或补充材料目录路径
+- `paper.json` 路径（如已更新）
