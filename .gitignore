@@ -236,6 +236,16 @@ __marimo__/
 /paper-notes/artifacts/*
 !/paper-notes/artifacts/.gitkeep
 
+# paper library records and derived artifacts
+# /library
+!/library/
+!/library/.gitignore
+!/library/index.html
+!/library/artifacts/
+!/library/artifacts/.gitkeep
+!/library/papers/
+!/library/papers/.gitkeep
+
 # cookies
 # /cookie
 

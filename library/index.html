@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Paper Notes</title>
+    <style>
+      :root {
+        --bg: #f7f7f5;
+        --panel: #ffffff;
+        --text: #202421;
+        --muted: #6f7772;
+        --line: #d9ded7;
+        --accent: #2f6f5d;
+        --accent-soft: #e7f0ec;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        line-height: 1.45;
+      }
+      main {
+        width: min(1500px, calc(100vw - 28px));
+        margin: 0 auto;
+        padding: 24px 0 36px;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        align-items: end;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--line);
+      }
+      h1 {
+        margin: 0;
+        font-size: 26px;
+        letter-spacing: 0;
+      }
+      .meta {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 5px;
+      }
+      .count {
+        min-width: 96px;
+        padding: 8px 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        text-align: right;
+      }
+      .count strong {
+        display: block;
+        font-size: 22px;
+      }
+      .table-wrap {
+        margin-top: 18px;
+        overflow-x: auto;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+      }
+      .toolbar {
+        display: grid;
+        grid-template-columns: minmax(260px, 1fr) 160px;
+        gap: 10px;
+        margin-top: 18px;
+      }
+      input, select {
+        min-height: 40px;
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        color: var(--text);
+        padding: 0 11px;
+        font: inherit;
+      }
+      input:focus, select:focus {
+        outline: 2px solid rgba(47, 111, 93, 0.22);
+        border-color: var(--accent);
+      }
+      table {
+        width: 100%;
+        min-width: 980px;
+        border-collapse: collapse;
+      }
+      th, td {
+        padding: 11px 12px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+        text-align: left;
+      }
+      th {
+        position: sticky;
+        top: 0;
+        background: #f0f2ef;
+        color: #3c443f;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      tr:last-child td { border-bottom: 0; }
+      .index, .year {
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .title {
+        font-weight: 650;
+        max-width: 620px;
+      }
+      .authors {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 3px;
+      }
+      .actions {
+        white-space: nowrap;
+      }
+      .link, .missing {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 30px;
+        border-radius: 8px;
+        padding: 0 9px;
+        font-size: 12px;
+        font-weight: 650;
+      }
+      .link {
+        border: 1px solid var(--line);
+        color: var(--text);
+        background: #ffffff;
+        text-decoration: none;
+      }
+      .link.primary {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: #ffffff;
+      }
+      .link + .link {
+        margin-left: 6px;
+      }
+      .missing {
+        color: #9aa19b;
+        background: #f1f3f0;
+        border: 1px solid #e1e5df;
+      }
+      .muted {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      @media (max-width: 760px) {
+        header {
+          align-items: start;
+          flex-direction: column;
+        }
+        .count {
+          text-align: left;
+        }
+        .toolbar {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1>Paper Notes</h1>
+          <div class="meta">Generated from local paper records. Open this file directly; no local server is required.</div>
+        </div>
+        <div class="count"><strong>0</strong><span class="meta">papers</span></div>
+      </header>
+      <section class="toolbar" aria-label="Filters">
+        <input id="searchInput" type="search" placeholder="Search title or author">
+        <select id="yearSelect" aria-label="Year filter">
+          <option value="">All years</option>
+
+        </select>
+      </section>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Paper</th>
+              <th>Year</th>
+              <th>Note</th>
+              <th>PDF</th>
+              <th>Fulltext</th>
+              <th>Translation</th>
+              <th>Supplement</th>
+            </tr>
+          </thead>
+          <tbody>
+
+          </tbody>
+        </table>
+      </div>
+    </main>
+    <script>
+      const searchInput = document.getElementById("searchInput");
+      const yearSelect = document.getElementById("yearSelect");
+      const rows = Array.from(document.querySelectorAll("tbody tr"));
+      const count = document.querySelector(".count strong");
+
+      function applyFilters() {
+        const query = searchInput.value.trim().toLowerCase();
+        const year = yearSelect.value;
+        let visible = 0;
+        rows.forEach((row) => {
+          const matchesSearch = !query || row.dataset.search.includes(query);
+          const matchesYear = !year || row.dataset.year === year;
+          const show = matchesSearch && matchesYear;
+          row.hidden = !show;
+          if (show) visible += 1;
+        });
+        count.textContent = visible;
+      }
+
+      searchInput.addEventListener("input", applyFilters);
+      yearSelect.addEventListener("change", applyFilters);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+# Legacy extraction artifacts
+artifacts/*
+!artifacts/.gitkeep
+
+# Paper record derived artifacts
+papers/**/fulltext.md
+papers/**/fulltext.zh-CN.md
+papers/**/assets/
+papers/**/figs/
+papers/**/supplements/**/fulltext.md
+papers/**/supplements/**/fulltext.zh-CN.md
+papers/**/supplements/**/assets/
+papers/**/supplements/**/figs/
