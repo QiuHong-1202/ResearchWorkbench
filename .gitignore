@@ -228,14 +228,6 @@ __marimo__/
 /arxiv-daily/recommendations/*
 !/arxiv-daily/recommendations/.gitkeep
 
-# paper-notes artifacts
-# /paper-notes
-/paper-notes/*
-!/paper-notes/.gitkeep
-!/paper-notes/artifacts/
-/paper-notes/artifacts/*
-!/paper-notes/artifacts/.gitkeep
-
 # paper library records and derived artifacts
 # /library
 !/library/

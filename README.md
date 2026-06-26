@@ -237,7 +237,6 @@ papers/
 │     └─ paper-translate/
 ├─ arxiv-daily/
 ├─ library/
-├─ paper-notes/
 ├─ papers/
 ├─ review/
 ├─ scripts/
