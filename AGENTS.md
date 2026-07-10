@@ -1,7 +1,7 @@
 - Skills are located in {PROJECT_ROOT}/.agents/ folder.
 - When looking up literature, first check {PROJECT_ROOT}/library/ for an already extracted full text before searching elsewhere.
 - Python environment for project — use uv env
-    - Default install: `uv sync` (pymupdf4llm and light deps). For advanced PDF via marker-pdf (PyTorch + marker stack): `uv sync --extra marker`.
+    - Default install: `uv sync` (includes marker-pdf, PyTorch, and the light dependencies). For a light install without the marker stack: `uv sync --no-group marker`.
     - When debugging Python/uv issues, explicitly inspect {PROJECT_ROOT}/.uv-cache or {PROJECT_ROOT}/.venv with hidden/ignored files enabled; do not assume default file search will include it.
     - In this repo, if a `uv` command is blocked by sandboxing because it needs access to the global uv cache, rerun it with escalated permissions instead of stopping to ask first.
 - Don't commit or run git write operations without the user's permission — like commit/push/reset/etc.

@@ -95,6 +95,11 @@ The archive helper does not run `git add`, `git mv`, `git commit`, or `git push`
 
 从本地 PDF 或 arXiv 链接生成可复用论文记录：`paper.json`、`fulltext.md`、`assets/pages.json`、`assets/manifest.json`、LLM 后处理 prompt，以及 marker-pdf 后端可选的图片与元数据。
 
+Backend selection:
+
+- `uv sync` 默认安装 **marker-pdf**，抽取脚本会优先使用它，产出带 OCR、版面分析和图片提取的高质量 Markdown
+- 使用 `uv sync --no-group marker` 可创建轻量环境；未安装 marker-pdf 时，抽取脚本会回退到 **pymupdf4llm**
+
 Key entry points:
 
 - Skill doc: [`.agents/skills/paper-extract/SKILL.md`](.agents/skills/paper-extract/SKILL.md)
@@ -164,16 +169,16 @@ uv run --project . python scripts/build_paper_index.py
 - Python `>= 3.11`
 - 一个能读取仓库内 `.agents/skills` 的 assistant 环境
 
-Default install:
+Default install (including marker-pdf and its PyTorch stack):
 
 ```bash
 uv sync
 ```
 
-Optional marker-pdf backend:
+Lightweight install without marker-pdf:
 
 ```bash
-uv sync --extra marker
+uv sync --no-group marker
 ```
 
 所有 Python 脚本都应通过仓库内的 `uv` 项目环境运行。

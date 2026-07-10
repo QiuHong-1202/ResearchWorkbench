@@ -226,7 +226,7 @@ def main() -> int:
         else:
             warning_msg = (
                 "marker-pdf is not installed; falling back to pymupdf4llm. "
-                "Install marker-pdf with: uv sync --extra marker"
+                "Install marker-pdf with: uv sync (or uv sync --group marker)"
             )
             print(warning_msg, file=sys.stderr)
             warnings.append(warning_msg)
