@@ -173,7 +173,10 @@ def extract_with_marker_pdf(
     from marker.models import create_model_dict
     from marker.output import text_from_rendered
 
-    converter = PdfConverter(artifact_dict=create_model_dict())
+    converter = PdfConverter(
+        config={"disable_tqdm": True},
+        artifact_dict=create_model_dict(),
+    )
     rendered = converter(str(pdf_path))
     markdown_text, _, images = text_from_rendered(rendered)
 
