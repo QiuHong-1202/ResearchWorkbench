@@ -45,6 +45,8 @@ allowed-tools: Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch, Agent
 
 当输入为 arXiv 链接时，执行 **arXiv 下载流程**（见 Workflow Step 0），将 PDF 下载到 `papers/` 目录并以标准格式 `YYYY - Title.pdf` 命名，然后再走统一的本地 PDF 流程。
 
+当本地 PDF 是从 Zotero 附件解析得到的路径（通常位于 `Zotero/storage/...`）时，必须先执行 **Zotero PDF 本地化流程**（见 Workflow Step 0A），把真实 PDF 文件复制到仓库 `papers/` 目录。后续提取必须使用仓库副本，不得直接从 Zotero storage 路径提取。
+
 ## Workflow
 
 ### 0. Download arXiv PDF (when input is arXiv link)
@@ -71,6 +73,34 @@ cd <REPO_ROOT> && uv run --project . python .agents/skills/paper-extract/scripts
 4. 输出 JSON 到 stdout，包含 `status`、`pdf_path`、`paper_stem`、`metadata`
 
 成功时使用返回的 `pdf_path` 作为后续步骤的 PDF 输入路径，`paper_stem` 作为 `PAPER_STEM`。
+
+### 0A. Localize Zotero attachment PDF (when input comes from Zotero)
+
+当 PDF 路径由 Zotero 附件获得时，先把附件复制到仓库本地，再执行任何抽取：
+
+1. 确认 Zotero 附件路径存在且后缀为 `.pdf`。
+2. 按 Step 1 的命名规则确定 `PAPER_STEM`，目标路径固定为 `papers/{PAPER_STEM}.pdf`。
+   - 若 Zotero 附件文件名已经符合 `YYYY - Title.pdf`，优先复用其 stem。
+   - 补充材料使用与主论文一致的 stem 和明确后缀，例如 `papers/{PAPER_STEM} supplementary.pdf`。
+3. 目标文件不存在时，执行真实文件复制（不要创建符号链接）：
+
+**Windows：**
+
+```powershell
+Copy-Item -LiteralPath "<ZOTERO_PDF_PATH>" -Destination "papers/{PAPER_STEM}.pdf"
+```
+
+**macOS / Linux：**
+
+```bash
+cp -- "<ZOTERO_PDF_PATH>" "papers/{PAPER_STEM}.pdf"
+```
+
+4. 复制后比较源文件与仓库副本的字节大小和 SHA-256；只有两者一致才可继续。
+5. 若目标文件已存在：
+   - SHA-256 一致：直接复用仓库副本。
+   - SHA-256 不一致：停止并报告冲突，不得自动覆盖现有仓库 PDF。
+6. 从此步骤起，将仓库副本 `papers/{PAPER_STEM}.pdf` 作为唯一 `PDF_PATH`。生成或更新 `paper.json` 时，`source` 与 `pdf_path` 都必须写仓库相对路径，不得写 Zotero storage 的绝对路径。
 
 ### 1. Prepare record directory
 
@@ -153,6 +183,8 @@ library/papers/{PAPER_STEM}/
 - `pages_path`
 - `supplements`
 
+若原始附件来自 Zotero，抽取后必须再次确认 `paper.json.source` 和 `paper.json.pdf_path` 都指向 Step 0A 生成的仓库副本。HTML 索引或笔记中的 PDF 链接也必须使用该仓库相对路径。
+
 抽取脚本会对 Markdown 做轻量后处理：
 
 - 首页出版 / 版权样板文本会移到 `fulltext.md` 文末的 `## Copyright` 区块。
@@ -214,6 +246,7 @@ SubAgent 完成后，主 Agent 必须检查：
 
 完成后，回复用户时必须给出：
 
+- 源 PDF 来自 Zotero 时，仓库本地 PDF 副本路径与哈希校验结果
 - 记录目录路径
 - `paper.json` 路径
 - `assets/manifest.json` 的 `status`
