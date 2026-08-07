@@ -216,7 +216,9 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# Project — ignore PDFs under papers/ (keep README etc. tracked)
+# Project — ignore source PDFs in the current and legacy locations
+/library/pdf/**/*.pdf
+/library/pdf/**/*.PDF
 /papers/**/*.pdf
 /papers/**/*.PDF
 

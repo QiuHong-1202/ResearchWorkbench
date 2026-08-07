@@ -7,7 +7,7 @@ in place by replacing the quoted paths after --input and --out-dir in the
 short wrapper that calls run_extract_pdf.ps1 / run_extract_pdf.sh. If a file is
 missing or neither pattern applies, a short wrapper script is written.
 
-The paper stem must match the PDF basename under papers/ (without .pdf) and the
+The paper stem must match the PDF basename under library/pdf/ (without .pdf) and the
 record directory name under library/papers/.
 
 Usage:
@@ -73,7 +73,7 @@ def render_paper_reading_prompt(paper_stem: str) -> str:
 
 
 def _invoke_paths_quoted(paper_stem: str) -> tuple[str, str]:
-    inp = escape_powershell_double_quoted(f"papers\\{paper_stem}.pdf")
+    inp = escape_powershell_double_quoted(f"library\\pdf\\{paper_stem}.pdf")
     out = escape_powershell_double_quoted(f"library\\papers\\{paper_stem}")
     return inp, out
 
@@ -102,7 +102,7 @@ def render_invoke_ps1(paper_stem: str) -> str:
 
 
 def _invoke_sh_paths_quoted(paper_stem: str) -> tuple[str, str]:
-    inp = escape_bash_double_quoted(f"papers/{paper_stem}.pdf")
+    inp = escape_bash_double_quoted(f"library/pdf/{paper_stem}.pdf")
     out = escape_bash_double_quoted(f"library/papers/{paper_stem}")
     return inp, out
 
@@ -152,7 +152,7 @@ def main() -> None:
             "Overwrite paper-reading-prompt.md from scripts/paper-reading-prompt.template.md; "
             "in extract_pdf.ps1 / extract_pdf.sh replace the --input / --out-dir paths; "
             "otherwise write short wrapper scripts. paper_stem "
-            "must match papers/<stem>.pdf and library/papers/<stem>."
+            "must match library/pdf/<stem>.pdf and library/papers/<stem>."
         )
     )
     parser.add_argument(

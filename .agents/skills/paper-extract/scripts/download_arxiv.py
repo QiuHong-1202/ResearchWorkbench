@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Download an arXiv paper PDF and save it with standardized naming to papers/."""
+"""Download an arXiv paper PDF with standardized naming to library/pdf/."""
 from __future__ import annotations
 
 import argparse
@@ -76,15 +76,17 @@ class ArxivMeta(NamedTuple):
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Download arXiv PDF to papers/ with standard naming."
+        description="Download arXiv PDF to library/pdf/ with standard naming."
     )
     parser.add_argument(
         "link", help="arXiv link (abs or pdf URL, e.g. https://arxiv.org/abs/2501.12345)"
     )
     parser.add_argument(
+        "--pdf-dir",
         "--papers-dir",
-        default="papers",
-        help="Target directory for downloaded PDFs (default: papers/).",
+        dest="pdf_dir",
+        default="library/pdf",
+        help="Target directory for downloaded PDFs (default: library/pdf/).",
     )
     parser.add_argument(
         "--overwrite",
@@ -479,11 +481,11 @@ def main() -> int:
     print(f"Authors: {', '.join(meta.authors[:3])}{'...' if len(meta.authors) > 3 else ''}", file=sys.stderr)
 
     standard_name = build_standard_name(meta)
-    papers_dir = Path(args.papers_dir)
-    papers_dir.mkdir(parents=True, exist_ok=True)
+    pdf_dir = Path(args.pdf_dir)
+    pdf_dir.mkdir(parents=True, exist_ok=True)
 
     pdf_filename = f"{standard_name}.pdf"
-    pdf_path = papers_dir / pdf_filename
+    pdf_path = pdf_dir / pdf_filename
 
     if pdf_path.exists() and not args.overwrite:
         print(f"File already exists: {pdf_path}", file=sys.stderr)

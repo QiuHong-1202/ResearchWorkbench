@@ -23,7 +23,7 @@ allowed-tools: Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch, Agent
 以下路径都相对当前仓库根目录解析：
 
 - `RECORDS_ROOT = library/papers`
-- `PAPERS_DIR = papers`（源 PDF 标准存放目录）
+- `PDFS_DIR = library/pdf`（源 PDF 标准存放目录）
 - LLM 后处理 prompt 模板：`assets/llm-postprocess-prompt-template.md`
 - PDF 提取脚本：`scripts/extract_pdf.py`
 - arXiv 下载脚本：`scripts/download_arxiv.py`
@@ -43,33 +43,33 @@ allowed-tools: Bash, Read, Write, Edit, Glob, Grep, WebFetch, WebSearch, Agent
    - 支持 `https://arxiv.org/pdf/...`
    - 支持裸 ID，如 `2501.12345`
 
-当输入为 arXiv 链接时，执行 **arXiv 下载流程**（见 Workflow Step 0），将 PDF 下载到 `papers/` 目录并以标准格式 `YYYY - Title.pdf` 命名，然后再走统一的本地 PDF 流程。
+当输入为 arXiv 链接时，执行 **arXiv 下载流程**（见 Workflow Step 0），将 PDF 下载到 `library/pdf/` 目录并以标准格式 `YYYY - Title.pdf` 命名，然后再走统一的本地 PDF 流程。
 
-当本地 PDF 是从 Zotero 附件解析得到的路径（通常位于 `Zotero/storage/...`）时，必须先执行 **Zotero PDF 本地化流程**（见 Workflow Step 0A），把真实 PDF 文件复制到仓库 `papers/` 目录。后续提取必须使用仓库副本，不得直接从 Zotero storage 路径提取。
+当本地 PDF 是从 Zotero 附件解析得到的路径（通常位于 `Zotero/storage/...`）时，必须先执行 **Zotero PDF 本地化流程**（见 Workflow Step 0A），把真实 PDF 文件复制到仓库 `library/pdf/` 目录。后续提取必须使用仓库副本，不得直接从 Zotero storage 路径提取。
 
 ## Workflow
 
 ### 0. Download arXiv PDF (when input is arXiv link)
 
-当用户输入为 arXiv 链接时，运行下载脚本将 PDF 存入 `papers/` 目录。
+当用户输入为 arXiv 链接时，运行下载脚本将 PDF 存入 `library/pdf/` 目录。
 
 **Windows：**
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\.agents\skills\paper-extract\scripts\run_download_arxiv.ps1 "<ARXIV_LINK>" --papers-dir papers
+powershell -ExecutionPolicy Bypass -File .\.agents\skills\paper-extract\scripts\run_download_arxiv.ps1 "<ARXIV_LINK>" --pdf-dir library/pdf
 ```
 
 **macOS / Linux：**
 
 ```bash
-cd <REPO_ROOT> && uv run --project . python .agents/skills/paper-extract/scripts/download_arxiv.py "<ARXIV_LINK>" --papers-dir papers
+cd <REPO_ROOT> && uv run --project . python .agents/skills/paper-extract/scripts/download_arxiv.py "<ARXIV_LINK>" --pdf-dir library/pdf
 ```
 
 脚本行为：
 
 1. 从链接中解析 arXiv ID
 2. 通过 arXiv API 获取论文元信息（标题、年份、作者）
-3. 下载 PDF 并以 `YYYY - Title.pdf` 格式保存到 `papers/`
+3. 下载 PDF 并以 `YYYY - Title.pdf` 格式保存到 `library/pdf/`
 4. 输出 JSON 到 stdout，包含 `status`、`pdf_path`、`paper_stem`、`metadata`
 
 成功时使用返回的 `pdf_path` 作为后续步骤的 PDF 输入路径，`paper_stem` 作为 `PAPER_STEM`。
@@ -79,28 +79,28 @@ cd <REPO_ROOT> && uv run --project . python .agents/skills/paper-extract/scripts
 当 PDF 路径由 Zotero 附件获得时，先把附件复制到仓库本地，再执行任何抽取：
 
 1. 确认 Zotero 附件路径存在且后缀为 `.pdf`。
-2. 按 Step 1 的命名规则确定 `PAPER_STEM`，目标路径固定为 `papers/{PAPER_STEM}.pdf`。
+2. 按 Step 1 的命名规则确定 `PAPER_STEM`，目标路径固定为 `library/pdf/{PAPER_STEM}.pdf`。
    - 若 Zotero 附件文件名已经符合 `YYYY - Title.pdf`，优先复用其 stem。
-   - 补充材料使用与主论文一致的 stem 和明确后缀，例如 `papers/{PAPER_STEM} supplementary.pdf`。
+   - 补充材料使用与主论文一致的 stem 和明确后缀，例如 `library/pdf/{PAPER_STEM} supplementary.pdf`。
 3. 目标文件不存在时，执行真实文件复制（不要创建符号链接）：
 
 **Windows：**
 
 ```powershell
-Copy-Item -LiteralPath "<ZOTERO_PDF_PATH>" -Destination "papers/{PAPER_STEM}.pdf"
+Copy-Item -LiteralPath "<ZOTERO_PDF_PATH>" -Destination "library/pdf/{PAPER_STEM}.pdf"
 ```
 
 **macOS / Linux：**
 
 ```bash
-cp -- "<ZOTERO_PDF_PATH>" "papers/{PAPER_STEM}.pdf"
+cp -- "<ZOTERO_PDF_PATH>" "library/pdf/{PAPER_STEM}.pdf"
 ```
 
 4. 复制后比较源文件与仓库副本的字节大小和 SHA-256；只有两者一致才可继续。
 5. 若目标文件已存在：
    - SHA-256 一致：直接复用仓库副本。
    - SHA-256 不一致：停止并报告冲突，不得自动覆盖现有仓库 PDF。
-6. 从此步骤起，将仓库副本 `papers/{PAPER_STEM}.pdf` 作为唯一 `PDF_PATH`。生成或更新 `paper.json` 时，`source` 与 `pdf_path` 都必须写仓库相对路径，不得写 Zotero storage 的绝对路径。
+6. 从此步骤起，将仓库副本 `library/pdf/{PAPER_STEM}.pdf` 作为唯一 `PDF_PATH`。生成或更新 `paper.json` 时，`source` 与 `pdf_path` 都必须写仓库相对路径，不得写 Zotero storage 的绝对路径。
 
 ### 1. Prepare record directory
 
@@ -116,7 +116,7 @@ cp -- "<ZOTERO_PDF_PATH>" "papers/{PAPER_STEM}.pdf"
 
 命名要求：
 
-- 优先与 `papers/` 目录中的源 PDF 保持同 stem
+- 优先与 `library/pdf/` 目录中的源 PDF 保持同 stem
 - 转成适合 Windows 文件名的安全名字
 - 同名时追加短后缀或短哈希
 - 最终论文记录目录：`library/papers/{PAPER_STEM}/`

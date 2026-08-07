@@ -105,20 +105,21 @@ Key entry points:
 - Skill doc: [`.agents/skills/paper-extract/SKILL.md`](.agents/skills/paper-extract/SKILL.md)
 - Extract script: [`.agents/skills/paper-extract/scripts/extract_pdf.py`](.agents/skills/paper-extract/scripts/extract_pdf.py)
 - arXiv download script: [`.agents/skills/paper-extract/scripts/download_arxiv.py`](.agents/skills/paper-extract/scripts/download_arxiv.py)
+- Source PDF root: `library/pdf/`
 - Paper record root: `library/papers/`
 
 Manual extraction:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\.agents\skills\paper-extract\scripts\run_extract_pdf.ps1 `
-  --input "papers\<paper>.pdf" `
+  --input "library\pdf\<paper>.pdf" `
   --out-dir "library\papers\<paper-stem>" `
   --overwrite
 ```
 
 ```bash
 bash .agents/skills/paper-extract/scripts/run_extract_pdf.sh \
-  --input "papers/<paper>.pdf" \
+  --input "library/pdf/<paper>.pdf" \
   --out-dir "library/papers/<paper-stem>" \
   --overwrite
 ```
@@ -209,6 +210,8 @@ arxiv-daily/
 
 library/
 ├─ index.html
+├─ pdf/
+│  └─ local PDFs (git-ignored)
 └─ papers/
    └─ {paper-stem}/
       ├─ paper.json
@@ -222,9 +225,6 @@ library/
       │  └─ llm-postprocess-report.md
       ├─ figs/
       └─ supplements/
-
-papers/
-└─ local PDFs (git-ignored)
 ```
 
 ## Repo Structure
@@ -242,7 +242,8 @@ papers/
 │     └─ paper-translate/
 ├─ arxiv-daily/
 ├─ library/
-├─ papers/
+│  ├─ pdf/
+│  └─ papers/
 ├─ review/
 ├─ scripts/
 ├─ pyproject.toml
@@ -259,4 +260,4 @@ papers/
 - [`paper-note` skill](.agents/skills/paper-note/SKILL.md)
 - [`paper-translate` skill](.agents/skills/paper-translate/SKILL.md)
 - [`arxiv-daily` config template](.agents/skills/arxiv-daily/config.template.yaml)
-- [`papers/README.md`](papers/README.md)
+- [`library/pdf/README.md`](library/pdf/README.md)
