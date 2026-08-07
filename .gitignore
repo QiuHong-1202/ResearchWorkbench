@@ -250,5 +250,6 @@ __marimo__/
 /extract_pdf.sh
 /paper-reading-prompt.md
 
-# scratch
+# scratch and temporary folders
 /scratch/
+/tmp/
