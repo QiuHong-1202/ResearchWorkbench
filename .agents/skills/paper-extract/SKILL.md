@@ -133,6 +133,10 @@ library/papers/{PAPER_STEM}/supplements/{SUPPLEMENT_LABEL}/
 
 根据当前操作系统选择对应的包装脚本运行。两个脚本功能相同，都会自动把 `python` 固定到当前仓库的 `uv` 环境。
 
+#### 超时
+
+运行提取 PDF 脚本时，显式将外层命令超时设为至少 5 分钟（`300000 ms` / `300 s`；大文件可更长），不得依赖模型或工具的默认值。`yield` / 轮询间隔不等同于命令超时，应保留同一进程句柄继续等待。若仍然超时，先检查进程状态与 `assets/manifest.json`，再判断提取是否失败。
+
 **macOS / Linux：**
 
 ```bash
