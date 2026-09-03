@@ -1,0 +1,6 @@
+interface:
+  display_name: "Paper Library Ingest"
+  short_description: "按文章列表依次完成论文获取、提取、修复、翻译、笔记与索引更新"
+  default_prompt: "Use $paper-library-ingest to process this paper list into the local library."
+policy:
+  allow_implicit_invocation: true
