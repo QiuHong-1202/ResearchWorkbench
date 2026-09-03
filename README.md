@@ -8,21 +8,18 @@
 
 ### Typical full paper workflow
 
-如果助手环境同时支持 Zotero 和本仓库的 repo-local skills，可以用下面的提示串联完整处理流程：
+使用 `paper-library-ingest` 可以把一篇或多篇论文按给定顺序完成获取、提取、公式与 Markdown 修复、中文翻译、笔记和索引更新。它会优先复用本地论文库；只有环境具备相应能力且请求范围允许时才访问 Zotero，必要时再查询公共网络。
 
 ```text
-@zotero 提取 Zotero 文库中的文章：
-${paper_name}
-的论文和补充材料（如有）全文
-
-按顺序执行以下步骤，如果文件已经存在、某个步骤失败、找不到 PDF、需要进一步批准，请停止流程让我 Debug：
-- 使用 $paper-extract Skill，使用这个 Skill 的时候，批准使用 SubAgent 进行 LLM Review
-- 使用 $formula-fix Skill 修复公式
-- 使用 $markdown-fix Skill 修复 OCR 错误
-- 使用 $paper-translate Skill 生成中文全文翻译
-- 使用 $paper-note Skill 生成笔记
-- 运行 `uv run --project . python scripts/build_paper_index.py` 更新本地论文库索引
+使用 $paper-library-ingest 将以下论文按顺序纳入本地论文库：
+- ${paper_name}
 ```
+
+该 Skill 支持补充材料和中断后的恢复，不执行 Git 写操作；生成的论文元数据、笔记与索引可能包含个人研究信息，公开提交前仍需逐项审阅。
+
+Key entry point:
+
+- Skill doc: [`.agents/skills/paper-library-ingest/SKILL.md`](.agents/skills/paper-library-ingest/SKILL.md)
 
 ### 1. `arxiv-daily`
 
@@ -238,6 +235,7 @@ library/
 │     ├─ formula-fix/
 │     ├─ markdown-fix/
 │     ├─ paper-extract/
+│     ├─ paper-library-ingest/
 │     ├─ paper-note/
 │     └─ paper-translate/
 ├─ arxiv-daily/
@@ -257,6 +255,7 @@ library/
 - [`formula-fix` skill](.agents/skills/formula-fix/SKILL.md)
 - [`markdown-fix` skill](.agents/skills/markdown-fix/SKILL.md)
 - [`paper-extract` skill](.agents/skills/paper-extract/SKILL.md)
+- [`paper-library-ingest` skill](.agents/skills/paper-library-ingest/SKILL.md)
 - [`paper-note` skill](.agents/skills/paper-note/SKILL.md)
 - [`paper-translate` skill](.agents/skills/paper-translate/SKILL.md)
 - [`arxiv-daily` config template](.agents/skills/arxiv-daily/config.template.yaml)
