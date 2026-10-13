@@ -156,10 +156,12 @@ Key entry point:
 从 `library/papers/*/paper.json` 和 `note.md` 生成自包含静态索引页面：
 
 ```bash
-uv run --project . python scripts/build_paper_index.py
+uv run --project . python library/scripts/build_paper_index.py
 ```
 
 然后直接用浏览器打开 `library/index.html`；该页面不需要本地服务器。
+
+索引支持标题和作者搜索、年份筛选、按添加时间或出版年份排序，并保留上次筛选设置。会议与期刊名称由 `library/scripts/venue_aliases.json` 归一化，资料链接集中显示为图标。索引从本地记录生成，默认不进入 Git。
 
 ## Prerequisites
 
@@ -186,7 +188,7 @@ uv sync --no-group marker
 生成当前论文的根目录 prompt 和快捷抽取脚本：
 
 ```bash
-uv run --project . python scripts/generate_paper_files.py "2026 - My Paper Title"
+uv run --project . python library/scripts/generate_paper_files.py "2026 - My Paper Title"
 ```
 
 该命令会更新被 Git 忽略的 `paper-reading-prompt.md`、`extract_pdf.ps1` 和 `extract_pdf.sh`。
@@ -241,9 +243,9 @@ library/
 ├─ arxiv-daily/
 ├─ library/
 │  ├─ pdf/
-│  └─ papers/
+│  ├─ papers/
+│  └─ scripts/
 ├─ review/
-├─ scripts/
 ├─ pyproject.toml
 └─ uv.lock
 ```

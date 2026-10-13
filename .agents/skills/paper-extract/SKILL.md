@@ -172,6 +172,7 @@ library/papers/{PAPER_STEM}/
 抽取脚本会生成或更新 `paper.json`，至少包含：
 
 - `paper_stem`
+- `added_at`（首次入库的 UTC 时间，重新提取时保留；兼容已有 `created`）
 - `title`
 - `year`
 - `authors`

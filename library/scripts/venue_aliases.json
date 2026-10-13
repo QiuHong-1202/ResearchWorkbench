@@ -1,0 +1,138 @@
+{
+  "IEEE TPAMI": [
+    "PAMI",
+    "TPAMI",
+    "IEEE Trans. Pattern Anal. Mach. Intell.",
+    "IEEE Transactions on Pattern Analysis and Machine Intelligence"
+  ],
+  "IJCV": [
+    "Int. J. Comput. Vis.",
+    "International Journal of Computer Vision"
+  ],
+  "CVPR": [
+    "IEEE Conf. Comput. Vis. Pattern Recog.",
+    "IEEE Conference on Computer Vision and Pattern Recognition",
+    "IEEE/CVF Conference on Computer Vision and Pattern Recognition"
+  ],
+  "ICCV": [
+    "Int. Conf. Comput. Vis.",
+    "International Conference on Computer Vision",
+    "IEEE/CVF International Conference on Computer Vision"
+  ],
+  "ECCV": [
+    "Eur. Conf. Comput. Vis.",
+    "European Conference on Computer Vision"
+  ],
+  "NeurIPS": [
+    "NIPS",
+    "Adv. Neural Inform. Process. Syst.",
+    "Advances in Neural Information Processing Systems"
+  ],
+  "ICPR": [
+    "Int. Conf. Pattern Recog.",
+    "International Conference on Pattern Recognition"
+  ],
+  "BMVC": [
+    "Brit. Mach. Vis. Conf.",
+    "British Machine Vision Conference"
+  ],
+  "ACM TOG": [
+    "TOG",
+    "ACM Trans. Graph.",
+    "ACM Transactions on Graphics"
+  ],
+  "IEEE TIP": [
+    "TIP",
+    "IEEE Trans. Image Process.",
+    "IEEE Transactions on Image Processing"
+  ],
+  "IEEE TVCG": [
+    "TVCG",
+    "IEEE Trans. Vis. Comput. Graph.",
+    "IEEE Transactions on Visualization and Computer Graphics"
+  ],
+  "IEEE TMM": [
+    "TMM",
+    "IEEE Trans. Multimedia",
+    "IEEE Transactions on Multimedia"
+  ],
+  "ACM MM": [
+    "ACMMM",
+    "ACM Int. Conf. Multimedia",
+    "ACM International Conference on Multimedia"
+  ],
+  "ICME": [
+    "Int. Conf. Multimedia and Expo",
+    "International Conference on Multimedia and Expo"
+  ],
+  "ICASSP": [
+    "IEEE International Conference on Acoustics, Speech and Signal Processing"
+  ],
+  "ICIP": [
+    "IEEE Int. Conf. Image Process.",
+    "IEEE International Conference on Image Processing"
+  ],
+  "ACCV": [
+    "Asian Conference on Computer Vision"
+  ],
+  "ICLR": [
+    "Int. Conf. Learn. Represent.",
+    "International Conference on Learning Representations"
+  ],
+  "IJCAI": [
+    "International Joint Conference on Artificial Intelligence"
+  ],
+  "PR": [
+    "Pattern Recognition"
+  ],
+  "AAAI": [
+    "AAAI Conference on Artificial Intelligence"
+  ],
+  "CVPRW": [
+    "IEEE Conf. Comput. Vis. Pattern Recog. Worksh.",
+    "IEEE/CVF Conference on Computer Vision and Pattern Recognition Workshops"
+  ],
+  "IEEE TCSVT": [
+    "TCSVT",
+    "CSVT",
+    "IEEE Trans. Circuit Syst. Video Technol.",
+    "IEEE Transactions on Circuits and Systems for Video Technology"
+  ],
+  "SPL": [
+    "IEEE Sign. Process. Letters",
+    "IEEE Signal Processing Letters"
+  ],
+  "VR": [
+    "Vis. Res.",
+    "Vision Research"
+  ],
+  "JOV": [
+    "J. Vis.",
+    "Journal of Vision"
+  ],
+  "TVC": [
+    "The Vis. Comput.",
+    "The Visual Computer"
+  ],
+  "JCST": [
+    "J. Comput. Sci. Tech.",
+    "Journal of Computer Science and Technology"
+  ],
+  "CGF": [
+    "Comput. Graph. Forum",
+    "Computer Graphics Forum"
+  ],
+  "CVM": [
+    "Computational Visual Media"
+  ],
+  "CHI": [
+    "CHI Conference on Human Factors in Computing Systems",
+    "ACM CHI Conference on Human Factors in Computing Systems"
+  ],
+  "UIST": [
+    "ACM Symposium on User Interface Software and Technology"
+  ],
+  "arxiv": [
+    "arXiv"
+  ]
+}

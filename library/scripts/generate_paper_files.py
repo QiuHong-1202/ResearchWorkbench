@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate repo-root paper-reading-prompt.md, extract_pdf.ps1, and extract_pdf.sh from a single paper stem.
 
-paper-reading-prompt.md is overwritten from scripts/paper-reading-prompt.template.md
+paper-reading-prompt.md is overwritten from library/scripts/paper-reading-prompt.template.md
 ({{paper_name}} placeholder). extract_pdf.ps1 and extract_pdf.sh are updated
 in place by replacing the quoted paths after --input and --out-dir in the
 short wrapper that calls run_extract_pdf.ps1 / run_extract_pdf.sh. If a file is
@@ -11,7 +11,7 @@ The paper stem must match the PDF basename under library/pdf/ (without .pdf) and
 record directory name under library/papers/.
 
 Usage:
-  python scripts/generate_paper_files.py "2026 - My Paper Title"
+  python library/scripts/generate_paper_files.py "2026 - My Paper Title"
 """
 
 from __future__ import annotations
@@ -149,7 +149,7 @@ def update_extract_ps1(content: str, paper_stem: str) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "Overwrite paper-reading-prompt.md from scripts/paper-reading-prompt.template.md; "
+            "Overwrite paper-reading-prompt.md from library/scripts/paper-reading-prompt.template.md; "
             "in extract_pdf.ps1 / extract_pdf.sh replace the --input / --out-dir paths; "
             "otherwise write short wrapper scripts. paper_stem "
             "must match library/pdf/<stem>.pdf and library/papers/<stem>."
@@ -164,7 +164,7 @@ def main() -> None:
     if not paper_stem:
         parser.error("paper_stem must not be empty")
 
-    repo_root = Path(__file__).resolve().parent.parent
+    repo_root = Path(__file__).resolve().parents[2]
     prompt_path = repo_root / "paper-reading-prompt.md"
     ps1_path = repo_root / "extract_pdf.ps1"
     sh_path = repo_root / "extract_pdf.sh"

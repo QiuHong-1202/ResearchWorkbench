@@ -138,6 +138,7 @@ def write_paper_record(
     record: dict[str, object] = {
         "schema_version": 1,
         "paper_stem": paper_stem,
+        "added_at": existing.get("added_at") or existing.get("created") or datetime.now(timezone.utc).isoformat(),
         "title": existing.get("title") or title,
         "year": existing.get("year") or year_from_stem(paper_stem),
         "authors": existing.get("authors") or authors_from_metadata(metadata),

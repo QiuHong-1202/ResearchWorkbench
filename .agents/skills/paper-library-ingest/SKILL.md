@@ -15,7 +15,7 @@ description: Orchestrate complete paper-library ingestion for an ordered list of
 
 在写入任何文件前完成整批只读预检：
 
-1. 确认当前目录是论文库仓库根目录，并确认 `.agents/skills/paper-extract/SKILL.md`、`.agents/skills/formula-fix/SKILL.md`、`.agents/skills/markdown-fix/SKILL.md`、`.agents/skills/paper-translate/SKILL.md`、`.agents/skills/paper-note/SKILL.md` 和 `scripts/build_paper_index.py` 均存在。
+1. 确认当前目录是论文库仓库根目录，并确认 `.agents/skills/paper-extract/SKILL.md`、`.agents/skills/formula-fix/SKILL.md`、`.agents/skills/markdown-fix/SKILL.md`、`.agents/skills/paper-translate/SKILL.md`、`.agents/skills/paper-note/SKILL.md` 和 `library/scripts/build_paper_index.py` 均存在。
 2. 完整读取上述组件 Skill；组件的输入、产物、验证和失败规则优先于本 Skill。本 Skill 只补充跨组件的顺序、恢复语义和记录契约。
 3. 依次解析每项输入的稳定标识符、标题、年份、主论文来源和明确存在的补充材料。先检查 `library/papers/` 与 `library/pdf/`，再使用用户明确提供的文件或线索；只有在环境具备访问能力且请求范围允许时才查询 Zotero，最后才查询公共网络。Zotero 不可用本身不是失败。
 4. 补充材料发现范围限定为：精确匹配 Zotero 条目的 PDF 附件、出版页明确链接的 supplementary PDF，以及 arXiv ancillary PDF。只有这些来源明确列出 PDF 补充材料但无法获取时才停止；明确列出的非 PDF 材料应报告为当前工具链不支持，但不把它误判为缺失 PDF。不得无限搜索或根据模糊线索猜测其存在。
@@ -79,7 +79,7 @@ description: Orchestrate complete paper-library ingestion for an ordered list of
 4. 对未通过恢复判定的每个 `fulltext.md` 调用 `$markdown-fix`，验证报告状态、标题层级和残留噪声计数。
 5. 对未通过恢复判定的主记录与补充材料目录调用 `$paper-translate`，生成 `fulltext.zh-CN.md`；再次验证主 `paper.json.supplements` 中对应 `translation_path`。
 6. 仅对未通过恢复判定的主论文调用一次 `$paper-note`。明确要求以最终修复后的 `fulltext.md` 为正文权威来源；`assets/pages.json` 只用于页定位与 `extracted_blocks` 中的图、表和版权内容。
-7. 在生成索引前，检查索引会扫描的全部顶层 `paper.json`、对应笔记 frontmatter 和补充材料条目；其中的本地路径必须位于仓库内且使用相对路径，发现仓库外绝对路径或 `file://` 时停止。运行 `uv run --project . python scripts/build_paper_index.py`，确认退出码为 0，并在 `library/index.html` 中验证当前论文标题、主记录链接和所有预期补充材料 label 均已出现；脚本静默跳过记录也视为失败。
+7. 在生成索引前，检查索引会扫描的全部顶层 `paper.json`、对应笔记 frontmatter 和补充材料条目；其中的本地路径必须位于仓库内且使用相对路径，发现仓库外绝对路径或 `file://` 时停止。运行 `uv run --project . python library/scripts/build_paper_index.py`，确认退出码为 0，并在 `library/index.html` 中验证当前论文标题、主记录链接和所有预期补充材料 label 均已出现；脚本静默跳过记录也视为失败。
 
 ## 停止与完成报告
 

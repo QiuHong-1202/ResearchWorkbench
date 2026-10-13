@@ -1,7 +1,7 @@
-<!-- `{{paper_name}}` 由 scripts/generate_paper_files.py 替换为命令行传入的 paper stem。 -->
+<!-- `{{paper_name}}` 由 library/scripts/generate_paper_files.py 替换为命令行传入的 paper stem。 -->
 
 ## Initialize Paper Reading
-read paper in folder `./papers` using skills in .agents. If the paper record already exists under `library/papers`, directly use it.
+Read the paper PDF in `library/pdf` using skills in .agents. If the paper record already exists under `library/papers`, reuse it.
 
 The paper name is {{paper_name}}
 
