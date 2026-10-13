@@ -143,6 +143,27 @@ uv run --project . python library/scripts/build_paper_index.py
 
 索引支持标题和作者搜索、年份筛选、按添加时间或出版年份排序，并保留上次筛选设置。会议与期刊名称由 `library/scripts/venue_aliases.json` 归一化，资料链接集中显示为图标。索引从本地记录生成，默认不进入 Git。
 
+### 7. `review-workspace`
+
+在仓库外的审稿工作区整理稿件、准备正文与补充材料，或只读加载已有审稿上下文。完整准备依次执行全文提取与校对、公式修复、OCR/Markdown 修复和中文翻译，并记录阶段状态以便续跑。
+
+先将 [workspace.example.json](.agents/skills/review-workspace/workspace.example.json) 复制为同目录下的 `workspace.local.json`，将 `REVIEW_WORKSPACE` 填为本机已存在的仓库外目录绝对路径，再运行：
+
+```bash
+uv run --no-sync python .agents/skills/review-workspace/scripts/workspace.py
+```
+
+配置留在本机；稿件、提取结果、译文和审稿草稿保存在配置的工作区。通用规则、空白模板和工具留在本项目。准备阶段使用 [task-defaults.json](.agents/skills/review-workspace/task-defaults.json) 的模型配置，运行时须使用宿主支持的模型名称与推理强度。
+
+```text
+使用 $review-workspace 准备 <稿件目录名>
+使用 $review-workspace 加载 <稿件目录名>
+```
+
+Key entry point:
+
+- Skill doc: [`.agents/skills/review-workspace/SKILL.md`](.agents/skills/review-workspace/SKILL.md)
+
 ## Prerequisites
 
 - `uv`
@@ -219,13 +240,13 @@ library/
 │     ├─ paper-extract/
 │     ├─ paper-library-ingest/
 │     ├─ paper-note/
-│     └─ paper-translate/
+│     ├─ paper-translate/
+│     └─ review-workspace/
 ├─ arxiv-daily/
 ├─ library/
 │  ├─ pdf/
 │  ├─ papers/
 │  └─ scripts/
-├─ review/
 ├─ pyproject.toml
 └─ uv.lock
 ```
@@ -239,5 +260,6 @@ library/
 - [`paper-library-ingest` skill](.agents/skills/paper-library-ingest/SKILL.md)
 - [`paper-note` skill](.agents/skills/paper-note/SKILL.md)
 - [`paper-translate` skill](.agents/skills/paper-translate/SKILL.md)
+- [`review-workspace` skill](.agents/skills/review-workspace/SKILL.md)
 - [`arxiv-daily` config template](.agents/skills/arxiv-daily/config.template.yaml)
 - [`library/pdf/README.md`](library/pdf/README.md)

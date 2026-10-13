@@ -252,8 +252,7 @@ __marimo__/
 /quick_prompt.md
 
 # paper review
-/review/*
-!/review/.gitkeep
+/review/
 
 # Project Commands
 /extract_pdf.ps1

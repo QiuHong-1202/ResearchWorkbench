@@ -9,3 +9,5 @@
 - Don't commit or run git write operations without the user's permission — like commit/push/reset/etc.
 - Before deleting any files not managed by Git (e.g., ignored files or files outside the workspace), you must warn me and wait for my manual confirmation, unless they are test files created by AGENT.
 - Windows encoding: If the platform default is GBK (cp936) always use `open(..., encoding='utf-8')` for file I/O and `sys.stdout.reconfigure(encoding='utf-8')` if printing non-ASCII to stdout. Without these, UTF-8 content (e.g. Chinese in NDJSON/MD files) causes `UnicodeDecodeError` or garbled output.
+
+- Review tasks: Before accessing a review manuscript, read `.agents/skills/review-workspace/SKILL.md` and its `references/rules.md`, then resolve `REVIEW_WORKSPACE` using the skill's `scripts/workspace.py`. Apply those rules explicitly to the external workspace. Keep manuscript-specific sources and outputs there, outside this repository and `library/`. Start review tasks from this project; keep agent rules in the project.
