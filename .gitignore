@@ -268,3 +268,4 @@ __marimo__/
 # Machine-local workspace configuration and presentation templates
 /.agents/skills/review-workspace/workspace.local.json
 /.agents/skills/seminar-slides/assets/*.pptx
+!/.agents/skills/seminar-slides/assets/seminar-template.pptx
