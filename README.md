@@ -164,6 +164,20 @@ Key entry point:
 
 - Skill doc: [`.agents/skills/review-workspace/SKILL.md`](.agents/skills/review-workspace/SKILL.md)
 
+### 8. `seminar-slides`
+
+根据单篇论文、多论文专题或研究进展制作、修改或审阅学术组会幻灯片。使用用户提供的空模板及其母版和版式，保留人工修改，默认页面以英文为主、讲者备注使用中文口语讲稿。交付前对照原文核查事实并渲染检查。
+
+调用时提供空模板路径；可以指定输出目录，默认输出到 `.agent-tmp/<task-id>/output/`。模板和演示内容由用户在本机管理。
+
+```text
+使用 $seminar-slides，按 <空模板路径> 为 <论文记录目录> 制作组会幻灯片
+```
+
+Key entry point:
+
+- Skill doc: [`.agents/skills/seminar-slides/SKILL.md`](.agents/skills/seminar-slides/SKILL.md)
+
 ## Prerequisites
 
 - `uv`
@@ -241,7 +255,8 @@ library/
 │     ├─ paper-library-ingest/
 │     ├─ paper-note/
 │     ├─ paper-translate/
-│     └─ review-workspace/
+│     ├─ review-workspace/
+│     └─ seminar-slides/
 ├─ arxiv-daily/
 ├─ library/
 │  ├─ pdf/
@@ -261,5 +276,6 @@ library/
 - [`paper-note` skill](.agents/skills/paper-note/SKILL.md)
 - [`paper-translate` skill](.agents/skills/paper-translate/SKILL.md)
 - [`review-workspace` skill](.agents/skills/review-workspace/SKILL.md)
+- [`seminar-slides` skill](.agents/skills/seminar-slides/SKILL.md)
 - [`arxiv-daily` config template](.agents/skills/arxiv-daily/config.template.yaml)
 - [`library/pdf/README.md`](library/pdf/README.md)

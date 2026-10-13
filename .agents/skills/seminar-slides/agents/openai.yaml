@@ -1,0 +1,4 @@
+interface:
+  display_name: "Seminar Slides"
+  short_description: "Create academic slides using the template formatting"
+  default_prompt: "Use $seminar-slides to create or revise my academic slides using the blank template and preserving my edits."
