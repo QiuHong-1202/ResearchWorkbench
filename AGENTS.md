@@ -1,4 +1,6 @@
 - Skills are located in {PROJECT_ROOT}/.agents/ folder.
+- Markdown wrapping: Keep each prose paragraph and each list-item paragraph on one physical line and rely on editor soft wrapping.
+- Temporary artifacts: Keep agent-created temporary and intermediate files under `{PROJECT_ROOT}/.agent-tmp/<task-id>/`; keep intended deliverables and reusable scripts in their appropriate project locations.
 - When looking up literature, first check {PROJECT_ROOT}/library/ for an already extracted full text before searching elsewhere.
 - Python environment for project — use uv env
     - Default install: `uv sync` (includes marker-pdf, PyTorch, and the light dependencies). For a light install without the marker stack: `uv sync --no-group marker`.

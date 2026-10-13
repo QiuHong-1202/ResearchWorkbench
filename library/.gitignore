@@ -3,6 +3,8 @@ artifacts/*
 !artifacts/.gitkeep
 
 # Paper record derived artifacts
+papers/*
+!papers/.gitkeep
 papers/**/fulltext.md
 papers/**/fulltext.zh-CN.md
 papers/**/assets/

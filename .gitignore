@@ -1,3 +1,6 @@
+# macOS
+.DS_Store
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -234,14 +237,19 @@ __marimo__/
 # /library
 !/library/
 !/library/.gitignore
-!/library/index.html
+/library/index.html
 !/library/artifacts/
 !/library/artifacts/.gitkeep
 !/library/papers/
 !/library/papers/.gitkeep
 
 # cookies
-# /cookie
+/cookie/
+
+# Private research projects and reading lists
+/project/
+/reading_list.md
+/quick_prompt.md
 
 # paper review
 /review/*
@@ -255,3 +263,9 @@ __marimo__/
 # scratch and temporary folders
 /scratch/
 /tmp/
+/.codex-build/
+/.agent-tmp/
+
+# Machine-local workspace configuration and presentation templates
+/.agents/skills/review-workspace/workspace.local.json
+/.agents/skills/seminar-slides/assets/*.pptx
