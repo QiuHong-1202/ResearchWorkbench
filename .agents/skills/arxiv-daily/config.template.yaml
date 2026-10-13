@@ -5,7 +5,7 @@
 #
 # `categories`：arXiv 分类代码列表，示例 cs.CV / cs.GR / cs.HC / cs.LG。
 # `artifacts_root`：相对仓库根目录，存放抓取、去重与打分批次等每日中间产物。
-# `recommendations_root`：相对仓库根目录，存放每日推荐文件。
+# `recommendations_root`：相对仓库根目录，按推荐日期的 YYYY-MM 子目录存放每日推荐文件。
 # `score_threshold`：0–100，低于该分数不进入推荐列表。
 # `max_recommendations`：推荐列表硬上限，防止噪声。
 # `interests.narrative`：自由文本描述你关注什么/不关注什么，越具体打分越准。

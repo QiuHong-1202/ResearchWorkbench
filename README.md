@@ -23,7 +23,7 @@ Key entry point:
 
 ### 1. `arxiv-daily`
 
-从配置的 arXiv 分类抓取论文，跨分类去重，分批打分，并在 `arxiv-daily/recommendations/` 生成每日推荐文件。
+从配置的 arXiv 分类抓取论文，跨分类去重，分批打分，并在 `arxiv-daily/recommendations/YYYY-MM/` 生成每日推荐文件。月份取推荐日期所属月份，历史补跑也使用相同规则。
 
 Key entry points:
 
@@ -45,48 +45,28 @@ Manual fetch and batch prep:
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\.agents\skills\arxiv-daily\scripts\run_fetch.ps1 `
   --config .\.agents\skills\arxiv-daily\config.yaml `
-  --out-dir arxiv-daily
+  --out-dir arxiv-daily/artifacts
 ```
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\.agents\skills\arxiv-daily\scripts\run_prepare_batches.ps1 `
   --config .\.agents\skills\arxiv-daily\config.yaml `
-  --out-dir arxiv-daily `
+  --out-dir arxiv-daily/artifacts `
   --date {date}
 ```
 
 ```bash
 bash .agents/skills/arxiv-daily/scripts/run_fetch.sh \
   --config .agents/skills/arxiv-daily/config.yaml \
-  --out-dir arxiv-daily
+  --out-dir arxiv-daily/artifacts
 ```
 
 ```bash
 bash .agents/skills/arxiv-daily/scripts/run_prepare_batches.sh \
   --config .agents/skills/arxiv-daily/config.yaml \
-  --out-dir arxiv-daily \
+  --out-dir arxiv-daily/artifacts \
   --date {date}
 ```
-
-### Optional: `archive-arxiv-recommendations`
-
-把 `arxiv-daily/recommendations/` 中非当月的推荐文件移动到 `archive/YYYY-MM/`，保持根目录只放当月推荐。
-
-Key entry point:
-
-- Skill doc: [`.agents/skills/archive-arxiv-recommendations/SKILL.md`](.agents/skills/archive-arxiv-recommendations/SKILL.md)
-
-Dry-run first:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\.agents\skills\archive-arxiv-recommendations\scripts\run_archive.ps1 --dry-run
-```
-
-```bash
-bash .agents/skills/archive-arxiv-recommendations/scripts/run_archive.sh --dry-run
-```
-
-The archive helper does not run `git add`, `git mv`, `git commit`, or `git push`.
 
 ### 2. `paper-extract`
 
@@ -205,7 +185,8 @@ arxiv-daily/
 │     ├─ {date}-dedupe-meta.json
 │     └─ scoring-batches-{date}/
 └─ recommendations/
-   └─ {date}-arxiv-recommended.md
+   └─ {month}/
+      └─ {date}-arxiv-recommended.md
 
 library/
 ├─ index.html
@@ -232,7 +213,6 @@ library/
 .
 ├─ .agents/
 │  └─ skills/
-│     ├─ archive-arxiv-recommendations/
 │     ├─ arxiv-daily/
 │     ├─ formula-fix/
 │     ├─ markdown-fix/
@@ -253,7 +233,6 @@ library/
 ## Further Docs
 
 - [`arxiv-daily` skill](.agents/skills/arxiv-daily/SKILL.md)
-- [`archive-arxiv-recommendations` skill](.agents/skills/archive-arxiv-recommendations/SKILL.md)
 - [`formula-fix` skill](.agents/skills/formula-fix/SKILL.md)
 - [`markdown-fix` skill](.agents/skills/markdown-fix/SKILL.md)
 - [`paper-extract` skill](.agents/skills/paper-extract/SKILL.md)

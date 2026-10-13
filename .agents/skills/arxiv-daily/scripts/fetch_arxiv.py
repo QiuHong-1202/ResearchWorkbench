@@ -77,7 +77,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def load_categories_from_config(config_path: Path) -> list[str]:
+def load_config(config_path: Path) -> dict[str, Any]:
     try:
         import yaml
     except ImportError as exc:
@@ -86,7 +86,7 @@ def load_categories_from_config(config_path: Path) -> list[str]:
     cats = data.get("categories") or []
     if not isinstance(cats, list) or not all(isinstance(c, str) for c in cats):
         raise RuntimeError(f"config.yaml `categories` must be a list of strings, got {cats!r}")
-    return cats
+    return data
 
 
 def is_retryable_http_error(exc: Exception) -> bool:
@@ -460,8 +460,9 @@ def main() -> int:
     retry_backoff = max(0.0, args.retry_backoff)
 
     categories: list[str] = list(args.category)
-    if not categories and args.config:
-        categories = load_categories_from_config(Path(args.config).expanduser().resolve())
+    config = load_config(Path(args.config).expanduser().resolve()) if args.config else {}
+    if not categories:
+        categories = config.get("categories") or []
     if not categories:
         print("No categories provided. Use --category or --config.", file=sys.stderr)
         return 2
@@ -612,7 +613,10 @@ def main() -> int:
 
     if previous_was_incomplete and manifest["status"] == "ok":
         meta_path = out_dir / f"{date_str}-dedupe-meta.json"
-        recommended_path = root_dir / f"{date_str}-arxiv-recommended.md"
+        recommendations_root = Path(config.get("recommendations_root", "arxiv-daily/recommendations")).expanduser()
+        if not recommendations_root.is_absolute():
+            recommendations_root = Path(__file__).resolve().parents[4] / recommendations_root
+        recommended_path = recommendations_root / date_str[:7] / f"{date_str}-arxiv-recommended.md"
         stale_outputs: list[str] = []
         if meta_path.exists():
             stale_outputs.append(str(meta_path))

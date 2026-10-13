@@ -11,16 +11,18 @@ description: |
   1. fetch arXiv RSS per category into a per-day subdirectory
   2. dedupe across categories and split into scoring batches
   3. dispatch one scoring SubAgent per batch in parallel
-  4. aggregate scores, filter by threshold, write a recommendation file under recommendations/
+  4. aggregate scores, filter by threshold, write a recommendation file under recommendations/YYYY-MM/
 context: fork
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep, Agent
 ---
 
 # ArXiv Daily
 
-自动抓取 arXiv RSS 指定分类、跨分类去重、分批由 SubAgent 并行打分，最终在 `arxiv-daily/recommendations/` 产出当天的 `recommended.md`。所有中间产物收敛到 `arxiv-daily/artifacts/{date}/`。
+自动抓取 arXiv RSS 指定分类、跨分类去重、分批由 SubAgent 并行打分，最终在 `arxiv-daily/recommendations/{month}/` 产出当天的 `{date}-arxiv-recommended.md`。所有中间产物收敛到 `arxiv-daily/artifacts/{date}/`。
 
 **日期语义**：`{date}` 始终是 **arXiv announcement UTC date**（与 RSS entries 里 `published` 字段的 UTC 日期一致），与本地时区无关。脚本默认从第一次拿到的 feed 里读出这个日期，保证同一次 announcement 无论何时/何地运行都落到同一目录。
+
+**月份目录**：`{month}` 始终取推荐日期 `{date}` 的前七位（`YYYY-MM`），不取运行当天的月份。当日生成、历史补跑、已有文件检查和补抓后覆盖均使用同一个月份目录。推荐文件生成时直接按月保存，无需月底归档。
 
 ## Output layout
 
@@ -38,7 +40,8 @@ arxiv-daily/
 │        ├─ batch-01-scores.ndjson                # SubAgent 输出
 │        └─ ... batch-NN.json / batch-NN-scores.ndjson
 └─ recommendations/
-   └─ {date}-arxiv-recommended.md                # 最终推荐输出
+   └─ {month}/                                  # 推荐日期所属月份 YYYY-MM
+      └─ {date}-arxiv-recommended.md             # 最终推荐输出
 ```
 
 ## Fixed paths
@@ -67,14 +70,14 @@ arxiv-daily/
 - `--source {auto,rss,api}`：手动覆盖抓取源，默认 `auto`（见上）；`api` 必须配合 `--date` 使用。
 - 临时分类覆盖（例如用户明确说"只看 cs.LG 今天的"）
 
-**短路行为**：无论日期是显式给的还是推断出的，一旦确定 `{date}`，检查 `<RECOMMENDATIONS_ROOT>/{date}-arxiv-recommended.md` 与 `<ARTIFACTS_ROOT>/{date}/{date}-manifest.json`。只有当推荐文件已存在，且 manifest 也存在并且 `status == "ok"`、所有 category `status` 都不是 `error` 时，才直接告诉用户"该日推荐已生成：`<路径>`；如需重跑请先删除该文件"，并**跳过 Step 2/3/4**。若 manifest 缺失或 `status in {"partial","error"}`，视为上次抓取未完成，**不要短路**，继续 Step 1 做补抓。
+**短路行为**：无论日期是显式给的还是推断出的，一旦确定 `{date}`，检查 `<RECOMMENDATIONS_ROOT>/{month}/{date}-arxiv-recommended.md` 与 `<ARTIFACTS_ROOT>/{date}/{date}-manifest.json`。只有当推荐文件已存在，且 manifest 也存在并且 `status == "ok"`、所有 category `status` 都不是 `error` 时，才直接告诉用户"该日推荐已生成：`<路径>`；如需重跑请先删除该文件"，并**跳过 Step 2/3/4**。若 manifest 缺失或 `status in {"partial","error"}`，视为上次抓取未完成，**不要短路**，继续 Step 1 做补抓。
 
 ## Workflow
 
 ### Step 1 — Fetch
 
 0. Read `config.yaml`，确认 `categories`、`artifacts_root`、`recommendations_root`、`score_threshold`、`max_recommendations`、`batch_size` 与 `interests` 都存在；将 `<ARTIFACTS_ROOT>` 设为 `artifacts_root`，将 `<RECOMMENDATIONS_ROOT>` 设为 `recommendations_root`
-1. **预检（显式日期场景）**：若用户在本次调用里给出了具体日期 `{date}`，**先**查 `<RECOMMENDATIONS_ROOT>/{date}-arxiv-recommended.md` 与 `<ARTIFACTS_ROOT>/{date}/{date}-manifest.json`。仅当推荐文件存在且 manifest 完整（`status == "ok"` 且无 category error）时，才直接结束，回复用户「该日推荐已生成：`<路径>`，如需重跑请先删除该文件」。若 manifest 不完整，则继续执行 Step 1 以补抓缺失分类。
+1. **预检（显式日期场景）**：若用户在本次调用里给出了具体日期 `{date}`，**先**查 `<RECOMMENDATIONS_ROOT>/{month}/{date}-arxiv-recommended.md` 与 `<ARTIFACTS_ROOT>/{date}/{date}-manifest.json`。仅当推荐文件存在且 manifest 完整（`status == "ok"` 且无 category error）时，才直接结束，回复用户「该日推荐已生成：`<路径>`，如需重跑请先删除该文件」。若 manifest 不完整，则继续执行 Step 1 以补抓缺失分类。
 2. 若 `interests.narrative` 仍是占位符（含"请用中文或英文填写"等字样），停下让用户先填
 3. 按 OS 选包装脚本：
 
@@ -101,7 +104,7 @@ arxiv-daily/
    - manifest 顶层 `source` 和每个 category 的 `source` 字段记录本次抓取走的是 `rss` 还是 `api`
    - 每个 category 会带 `filtered_out`，记录被丢弃的「跨日」条目数；汇总进 `warnings`（API 路径下该值恒为 0，因为 API 已按 `submittedDate` 精确过滤）
    - 若 manifest `warnings` 提示 "Recovered from a previous partial fetch..."，说明本次只是补齐了上次失败的分类；此时下游 `dedupe-meta.json` / 推荐文件可能仍是旧结果，后续 Step 2 必须加 `--force`
-5. **二次预检（推断日期场景）**：从 manifest 拿到权威 `{date}` 之后，再次检查 `<RECOMMENDATIONS_ROOT>/{date}-arxiv-recommended.md` 与 manifest 完整性。仅当推荐文件存在且 manifest 完整时，才直接结束并回复用户「该日推荐已生成：`<路径>`，如需重跑请先删除该文件」，不再执行 Step 2/3/4
+5. **二次预检（推断日期场景）**：从 manifest 拿到权威 `{date}` 之后，再次检查 `<RECOMMENDATIONS_ROOT>/{month}/{date}-arxiv-recommended.md` 与 manifest 完整性。仅当推荐文件存在且 manifest 完整时，才直接结束并回复用户「该日推荐已生成：`<路径>`，如需重跑请先删除该文件」，不再执行 Step 2/3/4
 
 **幂等性：** 默认跳过已存在的当日输出，强制重抓加 `--force`。
 
@@ -185,18 +188,18 @@ SubAgent 调用参数：
 3. 过滤 `score < score_threshold`
 4. 按 `score` 降序排序，分数相同时按 `arxiv_id` 升序稳定排序
 5. 截取前 `max_recommendations` 条
-6. 确保 `<RECOMMENDATIONS_ROOT>/` 存在，按 `assets/recommended-template.md` 的格式写 `<RECOMMENDATIONS_ROOT>/{date}-arxiv-recommended.md`（注意：**不写入 artifacts/{date}/**）：
+6. 确保 `<RECOMMENDATIONS_ROOT>/{month}/` 存在，按 `assets/recommended-template.md` 的格式写 `<RECOMMENDATIONS_ROOT>/{month}/{date}-arxiv-recommended.md`（注意：**不写入 artifacts/{date}/**）：
    - 头部：阈值、命中数（阈值以上总数，即便超过 max_recommendations 也照写实际命中数）、扫描总数、覆盖分类
    - 每条：`## N. [标题](abs_link) — 分数/100` + 分类（有 `extra_categories` 时附 `（也出现在 X, Y）`）+ 作者 + 推荐理由 + 摘要 + PDF
    - **不要写 `作者备注` 行**（RSS 不提供 Comment）
 7. 即便命中为 0，也要写一个合法的推荐文件并注明"本日无新投稿符合阈值"
-8. 如果 `<RECOMMENDATIONS_ROOT>/{date}-arxiv-recommended.md` 已存在且本次是在补抓后重建，直接覆盖它；不要因为旧文件存在而提前退出
+8. 如果 `<RECOMMENDATIONS_ROOT>/{month}/{date}-arxiv-recommended.md` 已存在且本次是在补抓后重建，直接覆盖它；不要因为旧文件存在而提前退出
 
 ## Final response
 
 完成后必须告知用户：
 
-- 推荐文件路径（`arxiv-daily/recommendations/{date}-arxiv-recommended.md`）
+- 推荐文件路径（`arxiv-daily/recommendations/{month}/{date}-arxiv-recommended.md`）
 - 当日 artifacts 子目录路径（`arxiv-daily/artifacts/{date}/`）
 - 扫描总数、命中数、推荐输出条数
 - 失败分类 / 失败批次列表（如果有）
